@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Install file for timefield module.
+ */
+
+/**
+ * Implements hook_field_schema()
+ */
+function timefield_field_schema($field) {
+
+  $db_columns = array();
+
+  $db_columns['value'] = array(
+    'type' => 'int',
+    'not null' => FALSE,
+  );
+
+
+  // If a second time is needed for 'To time', just make a copy of the first one.
+  if (!empty($field['settings']['totime'])) {
+    $db_columns['value2'] = $db_columns['value'];
+
+  }
+
+
+  return array('columns' => $db_columns);
+}

@@ -1,0 +1,485 @@
+<?php
+
+/**
+ * @file
+ * Defines a field for attaching times to entities.
+ */
+
+
+/**
+ * Implements hook_theme().
+ */
+function timefield_theme() {
+
+  return array(
+    'timefield_formatter' => array(
+      'variables' => array('time' => NULL, 'settings' => NULL),
+      'template' => 'timefield',
+      'path' => drupal_get_path('module', 'timefield') . '/theme',
+    ),
+  );
+
+
+}
+
+
+/**
+ * Implements hook_field_info()
+ */
+function timefield_field_info() {
+  $fields = array();
+
+  $fields['timefield'] = array(
+    'label' => t('Time Field'),
+    'description' => t('A field type for storing times, with an optional end time.'),
+    'settings' => array(
+      'totime' => '',
+      'input_format' => 'g:i a',
+    ),
+    'instance_settings' => array(),
+    'default_widget' => 'timefield_standard',
+    'default_formatter' => 'timefield_default',
+    'property_type' => 'timefield',
+    'property_callbacks' => array('timefield_property_info_callback'),
+  );
+
+  return $fields;
+}
+/**
+ * Implements hook_field_settings_form().
+ */
+function timefield_field_settings_form($field, $instance, $has_data) {
+  $settings = $field['settings'];
+
+  $form['totime'] = array(
+    '#type' => 'select',
+    '#title' => t('To Time'),
+    '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
+    '#description' => t('Should this field include an end time.'),
+    '#default_value' => $settings['totime'],
+    '#disabled' => $has_data,
+  );
+  $form['input_format'] = array(
+      '#title' => t('Time Input Format'),
+      '#type' => 'select',
+      '#options' => _timefield_display_options(),
+      '#default_value' => $settings['input_format'],
+      '#required' => TRUE,
+    );
+
+  return $form;
+}
+
+
+/**
+ * Implements hook_field_widget_info()
+ */
+function timefield_field_widget_info() {
+  $widgets = array();
+
+  $widgets['timefield_standard'] = array(
+    'label' => t('Time Field'),
+    'description' => t('Input Form for a Time Field'),
+    'field types' => array('timefield'),
+    'settings' => array(
+      'label_position' => 'above',
+    ),
+    'behaviors' => array(
+      'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+      'default value' => FIELD_BEHAVIOR_CUSTOM,
+    ),
+  );
+
+  return $widgets;
+
+}
+
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function timefield_field_formatter_info() {
+  return array(
+    'timefield_default' => array(
+      'label' => t('Default'),
+      'field types' => array('timefield'),
+      'settings' => array(
+        'display_format' => 'g:i a',
+      ),
+    ),
+  );
+}
+
+function timefield_time_validate($element, &$form_state, $form) {
+   if (!empty($element['#value'])) {
+     $date_value = date_parse($element['#value']);
+     if ($date_value['error_count']) {
+       form_error($element, t('The time is not in a format that I understand.'));
+     }
+     else {
+       $value = timefield_time_to_integer($element['#value']);
+       form_set_value($element, array('value' => $value), $form_state);
+
+     }
+
+
+   }
+}
+
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function timefield_field_is_empty($item, $field) {
+  // Every timefield must have at least single time value or it is considered empty
+  return empty($item['value']);
+}
+
+
+
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function timefield_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+
+  $settings = $display['settings'];
+  $element = array();
+
+  switch ($display['type']) {
+    case 'timefield_default':
+      foreach ($items as $delta => $item) {
+
+        $element[$delta] = array(
+          '#theme' => array('timefield_formatter'),
+          '#time' => $item,
+          '#settings' => $settings,
+        );
+      }
+      break;
+  }
+
+  return $element;
+}
+
+
+
+
+
+
+/**
+ * Implements hook_field_widget_form()
+ */
+function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  dpm($instance);
+  dpm($field);
+  dpm($element);
+  dpm($items);
+  //dpm(timefield_integer_to_time($value));
+
+  $settings = $field['settings'];
+  $element['time'] = array();
+
+  $value = isset($items[$delta]['value']) ? $items[$delta]['value'] : '';
+  $element['time']['value'] = array();
+
+  if ($settings['totime'] == 'required' || $settings['totime'] == 'optional') {
+    $value2 = isset($items[$delta]['value2']) ? $items[$delta]['value2'] : '';
+    $element['time']['value2'] = array();
+  }
+
+
+  switch ($instance['widget']['type']) {
+    case 'timefield_standard':
+      $js_settings = _timefield_js_settings($settings['input_format']);
+      $element['time'] += array(
+        '#title' => 'Time',
+        '#type' => 'fieldset',
+        '#attached' => array(
+          // Add javascript to trigger the colorpicker.
+          'js' => array(
+            drupal_get_path('module', 'timefield') . '/js/jquery.ui.timepicker.js',
+            drupal_get_path('module', 'timefield') . '/js/timefield.js',
+            array(
+              'data' => array('timefield' => $js_settings),
+              'type' => 'setting',
+            ),
+          ),
+          'css' => array(
+            drupal_get_path('module', 'timefield') . '/css/jquery-ui-timepicker.css'
+          ),
+        ),
+      );
+
+      $element['time']['value'] += array(
+        '#title' => isset($element['time']['value2']) ? 'Start Time' : 'Time',
+        '#description' => t('Enter a time value, in any format'),
+        '#type' => 'textfield',
+        '#default_value' => timefield_integer_to_time($settings['input_format'], $value),
+        // Allow a slightly larger size that the field length to allow for some
+        // configurations where all characters won't fit in input field.
+        '#size' => 15,
+        '#maxlength' => 15,
+        '#suffix' => '<div class="field-timefield-picker"></div>',
+        '#attributes' => array('class' => array('edit-field-timefield-picker')),
+        '#element_validate' => array('timefield_time_validate'),
+      );
+
+      // Add second element if totime is required or optional
+      if ($settings['totime'] == 'required' || $settings['totime'] == 'optional') {
+        $element['time']['value2'] += array(
+        '#title' => 'End Time',
+        '#description' => t('Enter a time value, in any format'),
+        '#type' => 'textfield',
+        '#default_value' => timefield_integer_to_time($settings['input_format'], $value2),
+        // Allow a slightly larger size that the field length to allow for some
+        // configurations where all characters won't fit in input field.
+        '#size' => 15,
+        '#maxlength' => 15,
+        '#suffix' => '<div class="field-timefield-picker"></div>',
+        '#attributes' => array('class' => array('edit-field-timefield-picker-2')),
+        '#element_validate' => array('timefield_time_validate'),
+      );
+
+
+      }
+
+
+
+      break;
+  }
+
+
+
+  return $element;
+}
+
+
+
+
+
+
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function timefield_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $element = array();
+
+ if ($display['type'] == 'timefield_default') {
+    $element['display_format'] = array(
+      '#title' => t('Time Display Format'),
+      '#type' => 'select',
+      '#options' => _timefield_display_options(),
+      '#default_value' => $settings['display_format'],
+      '#required' => TRUE,
+    );
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function timefield_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  return t('Current Format') . ': ' . _timefield_display_options($settings['display_format']);
+
+}
+
+/**
+ * Preprocess function for the timefield formatter.
+ */
+function template_preprocess_timefield_formatter(&$variables) {
+
+  // Encode the time elements.
+  $variables['time']['value'] = check_plain($variables['time']['value']);
+  $variables['time']['formatted_value'] = timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value']);
+  if (isset($variables['time']['value2'])) {
+    $variables['time']['value2'] = check_plain($variables['time']['value2']);
+    $variables['time']['formatted_value2'] = timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value2']);
+  }
+}
+
+/**
+ * Callback to alter the property info of time fields.
+ *
+ * @see timefield_field_info().
+ */
+function timefield_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
+  $name = $field['field_name'];
+  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
+dpm($field);
+  $property['type'] = ($field['cardinality'] != 1) ? 'list<timefield>' : 'timefield';
+  $property['getter callback'] = 'timefield_property_verbatim_get';
+  $property['setter callback'] = 'timefield_property_verbatim_set';
+ // $property['auto creation'] = 'timefield_default_values';
+  $property['property info'] = timefield_data_property_info();
+
+    unset($property['setter callback']);
+  unset($property['query callback']);
+}
+
+
+
+
+function timefield_data_property_info($name = NULL) {
+  // Build an array of basic property information for the time field.
+  $properties = array(
+    'value' => array(
+      'label' => t('The integer value of the first time value'),
+      'description' => t('The integer value of the first time value'),
+      'type' => 'timefield',
+      'getter callback' => 'timefield_property_verbatim_get',
+      'setter callback' => 'timefield_property_verbatim_set',
+    ),
+    'value2' => array(
+      'label' => t('The integer value of the second time value'),
+      'description' => t('The integer value of the second time value'),
+      'type' => 'timefield',
+      'getter callback' => 'timefield_property_verbatim_get',
+      'setter callback' => 'timefield_property_verbatim_set',
+    ),
+  );
+
+
+  return $properties;
+}
+
+
+/**
+ * Gets the property just as it is set in the data.
+ */
+function timefield_property_verbatim_get($data, array $options, $name) {
+
+  if ((is_array($data) || (is_object($data) && $data instanceof ArrayAccess)) && isset($data[$name])) {
+    return $data[$name];
+  }
+  elseif (is_object($data) && isset($data->$name)) {
+    return $data->$name;
+  }
+  return NULL;
+}
+
+
+
+/**
+ * Sets the property to the given value. May be used as 'setter callback'.
+ */
+function timefield_property_verbatim_set(&$data, $name, $value) {
+  dpm($data);
+  dpm($value);
+  if (is_array($data) || (is_object($data) && $data instanceof ArrayAccess)) {
+    $data[$name] = $value;
+  }
+  elseif (is_object($data)) {
+    $data->$name = $value;
+  }
+}
+
+function timefield_integer_to_time($format, $value) {
+  if (!empty($value)) {
+    return date($format, mktime(0,0,$value));
+  }
+  else {
+    return '';
+  }
+}
+
+function timefield_time_to_integer($value) {
+  $time = date_parse($value);
+  $output = 0;
+  if ($time['error_count'] == 0) {
+    $output += $time['hour'] * 60 * 60;
+    $output += $time['minute'] * 60;
+    $output += $time['second'] ;
+    return $output;
+  }
+  else {
+    return 0;
+  }
+}
+
+
+
+function _timefield_display_options($current_option = NULL) {
+
+  $values = array(
+    'g:i a' => date('g:i a', time()) . ' -- ' . t('12-hour format hours without leading zeros'),
+    'h:i a' => date('h:i a', time()) . ' -- ' . t('12-hour format hours with leading zeros'),
+    'H:i' => date('H:i', time()) . ' -- ' . t('24-hour format hours with leading zeros'),
+    'G:i' => date('G:i', time()) . ' -- ' . t('24-hour format hours without leading zeros'),
+    'g:i A' => date('g:i A', time()) . ' -- ' . t('12-hour format hours without leading zeros'),
+    'h:i A' => date('h:i A', time()) . ' -- ' . t('12-hour format hours with leading zeros'),
+  );
+
+  if (is_null($current_option)) {
+    return $values;
+  }
+  else {
+    return $values[$current_option];
+  }
+}
+
+function _timefield_js_settings($settings) {
+
+  $js_settings = array(
+    'timeSeparator' => ':',
+  );
+
+  switch ($settings) {
+    case 'g:i a':
+      $js_settings += array(
+        'showLeadingZero' => FALSE,
+        'showPeriod' => TRUE, //AM PM
+        'showPeriodLabels' => TRUE,
+        'amPmText' => array("am", "pm"),
+      );
+      break;
+    case 'h:i a':
+      $js_settings += array(
+        'showLeadingZero' => TRUE,
+        'showPeriod' => TRUE, //AM PM
+        'showPeriodLabels' => FALSE,
+        'amPmText' => array("am", "pm"),
+      );
+      break;
+    case 'H:i':
+      $js_settings += array(
+        'showLeadingZero' => TRUE,
+        'showPeriod' => FALSE, //AM PM, 24 hour
+        'showPeriodLabels' => TRUE,
+      );
+      break;
+    case 'G:i':
+      $js_settings += array(
+        'showLeadingZero' => TRUE,
+        'showPeriod' => FALSE, //AM PM
+        'showPeriodLabels' => TRUE,
+      );
+      break;
+    case 'g:i A':
+      $js_settings += array(
+        'showLeadingZero' => FALSE,
+        'showPeriod' => TRUE, //AM PM
+        'showPeriodLabels' => TRUE,
+        'amPmText' => array("AM", "PM"),
+      );
+      break;
+    case 'h:i A':
+      $js_settings += array(
+        'showLeadingZero' => TRUE,
+        'showPeriod' => TRUE, //AM PM
+        'showPeriodLabels' => TRUE,
+        'amPmText' => array("AM", "PM"),
+      );
+      break;
+  }
+
+  return $js_settings;
+}
