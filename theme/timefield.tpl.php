@@ -2,12 +2,24 @@
 
 /**
  * @file
- * TODO: Describe what this template is here for.
+ * Template file for timefield
+ *
+ * variables available:
+ *
+ * $time['time'] - the formatted output of this field, with a hyphen between
+ * the first and second time if the "to time" exists.
+ * $time['formatted_value'] - first time value formatted as described in display
+ * settings
+ * $time['formatted_value2'] - second time value formatted as described in
+ * display settings
+ * $time['value'] - integer value of first time, expressed as timezone
+ * agnostic offset from 00:00
+ * $time['value2'] - integer value of second time, expressed as timezone
+ * agnostic offset from 00:00
+ *
+ *
  */
 ?>
 <div class="time-default">
-  <?php print $time['formatted_value'] ?>
-  <?php if (isset($time['value2'])): ?>
-   <?php print ' - ' . $time['formatted_value2'] ?>
-  <?php endif; ?>
+<?php print $time['time'] ?>
 </div>
