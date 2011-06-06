@@ -1,0 +1,6 @@
+name = Time Field Taxonomy Helper
+description = Provides a widget to automatically tag a timefield enabled taxonomy vocabularies from another date/time providing field.
+core = 7.x
+package = Fields
+dependencies[] = taxonomy
+dependencies[] = ctools

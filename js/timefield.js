@@ -16,7 +16,7 @@
         $(".field-timefield-picker").hide();
         $(picker).show();
         var settings = Drupal.settings.timefield;
-  		  settings.showOn = 'focus';
+        settings.showOn = 'focus';
   		  settings.altField = edit_field;
         $(picker).timepicker( settings);
       });

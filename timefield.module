@@ -114,25 +114,31 @@ function timefield_time_validate($element, &$form_state, $form) {
   if (isset($form_state['values'][$field_name][$element['#language']][$delta])) {
     $values = $form_state['values'][$field_name][$element['#language']][$delta];
     $new_values = array();
-    foreach($values as $index => $value) {
-      // Ignore weight and other underscored variables
-      if (strpos($index, '_', 0) === FALSE) {} else { continue; };
 
-      // If empty, set to null
-      if (strlen($value) == 0) {
-        form_set_value($element, array($index => NULL), $form_state);
-        return;
-      }
+    // If empty, set to null
+    if (strlen($values['value']) == 0) {
+      form_set_value($element, array('value' => NULL), $form_state);
+      return;
+    }
+    $date_value = date_parse($values['value']);
+    if ($date_value['error_count']) {
+      form_error($element['value'], t('The time is not in a format that I understand.'));
+    }
+    else {
+      $parsed_value = timefield_time_to_integer($values['value']);
+      $new_values['value'] = $parsed_value;
+    }
 
-      $date_value = date_parse($value);
-      if ($date_value['error_count']) {
-        form_error($element[$index], t('The time is not in a format that I understand.'));
+    $date_value2 = date_parse($values['value2']);
+    if ($date_value2['error_count']) {
+      form_error($element['value2'], t('The to time is not in a format that I understand.'));
+    }
+    else {
+      $parsed_value = timefield_time_to_integer($values['value2']);
+      if ($values['value'] > $parsed_value || $parsed_value == 0) {
+        $parsed_value += 86400;
       }
-      else {
-        $parsed_value = timefield_time_to_integer($value);
-        $new_values = array_merge($new_values, array($index => $parsed_value));
-
-      }
+      $new_values['value2'] = $parsed_value;
     }
 
 
@@ -141,12 +147,37 @@ function timefield_time_validate($element, &$form_state, $form) {
   }
 }
 
+
+/**
+ * Implements hook_field_validate().
+ */
+function timefield_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  foreach ($items as $delta => $item) {
+    if (!empty($item['value'])) {
+      if (!is_int($item['value'])) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'timefield_invalid',
+          'message' => t('Time values are incorrect.'),
+        );
+      }
+    }
+    if (!empty($item['value2'])) {
+      if (!is_int($item['value2'])) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'timefield_invalid',
+          'message' => t('Time values are incorrect.'),
+        );
+      }
+    }
+  }
+}
+
 /**
  * Implements hook_field_is_empty().
  */
 function timefield_field_is_empty($item, $field) {
   // Every timefield must have at least single time value or it is considered empty
-  return empty($item['value']);
+  return (strlen($item['value']) == 0);
 }
 
 /**
@@ -203,8 +234,6 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         $settings_set = TRUE;
       }
 
-
-
       $element += array(
         '#title' => 'Time',
         '#type' => 'fieldset',
@@ -223,7 +252,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
             drupal_get_path('module', 'timefield') . '/css/jquery-ui-timepicker.css'
           ),
         ),
-                '#element_validate' => array('timefield_time_validate'),
+        '#element_validate' => array('timefield_time_validate'),
       );
 
       $element['value'] = array(
@@ -369,8 +398,11 @@ function timefield_property_verbatim_set(&$data, $name, $value) {
  * the integer value to be converted
  */
 function timefield_integer_to_time($format, $value) {
-  if (!empty($value)) {
-    return date($format, mktime(0, 0, $value));
+  if (!strlen($value) == 0) {
+    if ($value >= 86400) {
+      $value = $value - 86400;
+    }
+     return date($format, mktime(0, 0, $value));
   }
   else {
     return '';

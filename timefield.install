@@ -12,6 +12,26 @@ function timefield_field_schema($field) {
 
   $db_columns = array();
 
+//  $db_columns['value'] = array(
+//    'type' => 'varchar',
+//    'mysql_type' => 'time',
+//    'pgsql_type' => 'time',
+//    'length' => 8,
+//    'not null' => TRUE
+//  );
+//
+//  if (!empty($field['settings']['totime'])) {
+//    $db_columns['value2'] = array(
+//      'type' => 'varchar',
+//      'mysql_type' => 'time',
+//      'pgsql_type' => 'time',
+//      'length' => 8,
+//      'not null' => TRUE
+//    );
+//
+//  }
+
+
   $db_columns['value'] = array(
     'type' => 'int',
     'not null' => FALSE,
