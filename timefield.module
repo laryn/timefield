@@ -335,7 +335,7 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
     );
   }
 
- // return $element;
+  return $element;
 }
 
 /**
