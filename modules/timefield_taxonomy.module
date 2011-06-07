@@ -6,33 +6,25 @@
  *
  */
 
-
 /**
  * Returns a list handlers that can provide time tagging info.
  */
 function timefield_taxonomy_handler_info($field_type = NULL) {
 
-  static $handlers;
-  if (!$handlers) {
-    $handlers = array(
-      'date' => array(
-        'name' => 'date',
-        'title' => t("Date/Time Field"),
-        'description' => t('Get a time from a date/time enabled field'),
-        'callback' => 'timefield_taxonomy_date_convert',
-        'field_types' => array('datestamp', 'datetime'),
-        'field_callback' => 'timefield_taxonomy_date_convert_field',
-      ),
-      'timefield' => array(
+  $handlers = array(
+    'date' => array(
+      'name' => 'date',
+      'title' => t("Date/Time Field"),
+      'description' => t('Get a time from a date/time enabled field'),
+      'field_types' => array('datestamp', 'datetime'),
+    ),
+    'timefield' => array(
       'name' => 'timefield',
-        'title' => t("Date/Time Field"),
-        'description' => t('Get a time from a date/time enabled field'),
-        'callback' => 'timefield_taxonomy_timefield_convert',
-        'field_types' => array('timefield'),
-        'field_callback' => 'timefield_taxonomy_timefield_convert_field',
-      ),
-    );
-  }
+      'title' => t("Date/Time Field"),
+      'description' => t('Get a time from a date/time enabled field'),
+      'field_types' => array('timefield'),
+    ),
+  );
   if ($field_type) {
     $field_handlers = $handlers;
     foreach ($field_handlers as $i => $handler) {
@@ -65,7 +57,6 @@ function timefield_taxonomy_supported_field_types() {
   return $supported;
 }
 
-
 /**
  * Implements hook_field_widget_info().
  */
@@ -77,7 +68,6 @@ function timefield_taxonomy_field_widget_info() {
     ),
   );
 }
-
 
 /**
  * Implements field_widget_settings_form().
@@ -122,8 +112,6 @@ function timefield_taxonomy_field_widget_settings_form($this_field, $instance) {
       }
     }
   }
-
-
 
   $form['timefield_taxonomy_field'] = array(
     '#type' => 'select',
@@ -194,7 +182,6 @@ function timefield_taxonomy_field_widget_form(&$form, &$form_state, $field, $ins
   return $element;
 }
 
-
 /**
  * Implements hook_widget_validate
  */
@@ -210,6 +197,8 @@ function timefield_taxonomy_widget_validate($element, &$form_state) {
         $field_object = field_info_field($field[$lang][0]['timefield_taxonomy_source']);
         $match_field = $field[$lang][0]['timefield_taxonomy_vocab_match'];
         $match_options = $field[$lang][0]['timefield_taxonomy_match_options'];
+        $target_field = $field[$lang][0]['timefield_taxonomy_target'];
+        $field_cardinality = $form_state['field'][$target_field][$lang]['field']['cardinality'];
         $field[$lang] = array();
         if (isset($form_state['values'][$source][$lang])) {
           $tags = array();
@@ -218,13 +207,7 @@ function timefield_taxonomy_widget_validate($element, &$form_state) {
               $tags[] = call_user_func('timefield_taxonomy_date_field', $field_object, $item, $match_field, $match_options);
             }
           }
-          //@TODO: check to make sure we don't add more values than this field has cardinality
-
-          foreach ($tags as $tag) {
-            foreach ($tag as $t) {
-              $field[$lang][] = array('tid' => $t);
-            }
-          }
+          $field[$lang] = _timefield_taxonomy_aggregate_tags($tags, $field_cardinality);
         }
       }
     }
@@ -233,29 +216,36 @@ function timefield_taxonomy_widget_validate($element, &$form_state) {
 
 }
 
-
-// CALLBACKS
-
-// field callback
+/**
+ * Main callback for process source field data against target field data
+ */
 function timefield_taxonomy_date_field($field, $field_item, $match_field, $options) {
 
   if ($field['type'] == 'timefield') {
-
+    $start_time = timefield_time_to_integer($field_item['value']);
+    if (isset($field_item['value2'])) {
+      $end_time = timefield_time_to_integer($field_item['value2']);
+    }
+    else {
+      $end_time = $start_time;
+    }
   }
   elseif ($field['type'] == 'datetime' || $field['type'] == 'datestamp') {
-
     // exit if value is empty
     if (empty($field_item['value'])) return;
-
     $start_time = timefield_time_to_integer($field_item['value']) + $field_item['offset'];
-    $end_time = timefield_time_to_integer($field_item['value2']) + $field_item['offset2'];
+    if (isset($field_item['value2'])) {
+      $end_time = timefield_time_to_integer($field_item['value2']) + $field_item['offset2'];
+    }
+    else {
+      $end_time = timefield_time_to_integer($field_item['value']) + $field_item['offset'];
+    }
 
   }
   else {
+    // "Add another" for multi-value fields ends up here.
     return;
   }
-
-
   switch ($options) {
     case 'lower bound first':
       return timefield_taxonomy_query($match_field, $start_time, $start_time);
@@ -267,7 +257,6 @@ function timefield_taxonomy_date_field($field, $field_item, $match_field, $optio
       return timefield_taxonomy_query($match_field, $start_time, $end_time);
       break;
   }
-  return NULL;
 }
 
 /**
@@ -290,5 +279,24 @@ function timefield_taxonomy_query($field, $start_time, $end_time) {
   }
   return $return;
 
+}
+
+/**
+ * Helper function to aggregate tags, limiting to target field cardinality
+ */
+function _timefield_taxonomy_aggregate_tags($tags, $field_cardinality) {
+  $agg_tags = array();
+  $count = 0;
+  foreach ($tags as $tag) {
+    foreach ($tag as $t) {
+      if (!in_array(array('tid' => $t), $agg_tags)) {
+        if ($count < $field_cardinality || $field_cardinality == -1 ) {
+          $agg_tags[] = array('tid' => $t);
+        }
+        $count += 1;
+      }
+    }
+  }
+  return $agg_tags;
 }
 

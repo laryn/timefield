@@ -5,6 +5,7 @@
  * Defines a Field API field for time.
  */
 
+
 /**
  * Implements hook_theme().
  */
@@ -12,7 +13,7 @@ function timefield_theme() {
 
   return array(
     'timefield_formatter' => array(
-      'variables' => array('time' => NULL, 'settings' => NULL),
+      'variables' => array('time' => NULL, 'settings' => NULL, 'format' => NULL),
       'template' => 'timefield',
       'path' => drupal_get_path('module', 'timefield') . '/theme',
     ),
@@ -35,8 +36,6 @@ function timefield_field_info() {
     'instance_settings' => array(),
     'default_widget' => 'timefield_standard',
     'default_formatter' => 'timefield_default',
-    'property_type' => 'timefield',
-    'property_callbacks' => array('timefield_property_info_callback'),
   );
 
   return $fields;
@@ -91,10 +90,17 @@ function timefield_field_widget_info() {
 function timefield_field_formatter_info() {
   return array(
     'timefield_default' => array(
-      'label' => t('Default'),
+      'label' => t('Default (time display)'),
       'field types' => array('timefield'),
       'settings' => array(
         'display_format' => 'g:i a',
+      ),
+    ),
+    'timefield_duration' => array(
+      'label' => t('Duration'),
+      'field types' => array('timefield'),
+      'settings' => array(
+        'duration_format' => 'minutes',
       ),
     ),
   );
@@ -128,25 +134,28 @@ function timefield_time_validate($element, &$form_state, $form) {
       $parsed_value = timefield_time_to_integer($values['value']);
       $new_values['value'] = $parsed_value;
     }
-
-    $date_value2 = date_parse($values['value2']);
-    if ($date_value2['error_count']) {
-      form_error($element['value2'], t('The to time is not in a format that I understand.'));
-    }
-    else {
-      $parsed_value = timefield_time_to_integer($values['value2']);
-      if ($values['value'] > $parsed_value || $parsed_value == 0) {
-        $parsed_value += 86400;
+    if (isset($values['value2'])) {
+      $date_value2 = date_parse($values['value2']);
+      if ($date_value2['error_count']) {
+        form_error($element['value2'], t('The to time is not in a format that I understand.'));
       }
-      $new_values['value2'] = $parsed_value;
+      else {
+        $parsed_value = timefield_time_to_integer($values['value2']);
+        if ($values['value'] > $parsed_value || $parsed_value == 0) {
+          $parsed_value += 86400;
+        }
+        $new_values['value2'] = $parsed_value;
+      }
+
+
     }
+
 
 
     form_set_value($element, $new_values, $form_state);
 
   }
 }
-
 
 /**
  * Implements hook_field_validate().
@@ -196,6 +205,18 @@ function timefield_field_formatter_view($entity_type, $entity, $field, $instance
           '#theme' => array('timefield_formatter'),
           '#time' => $item,
           '#settings' => $settings,
+          '#format' => 'default',
+        );
+      }
+      break;
+    case 'timefield_duration':
+      foreach ($items as $delta => $item) {
+
+        $element[$delta] = array(
+          '#theme' => array('timefield_formatter'),
+          '#time' => $item,
+          '#settings' => $settings,
+          '#format' => 'duration',
         );
       }
       break;
@@ -291,6 +312,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
 function timefield_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
+
   $element = array();
 
   if ($display['type'] == 'timefield_default') {
@@ -302,8 +324,18 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       '#required' => TRUE,
     );
   }
+  if ($display['type'] == 'timefield_duration') {
 
-  return $element;
+    $element['duration_format'] = array(
+      '#title' => t('Time Duration Format'),
+      '#type' => 'select',
+      '#options' => _timefield_duration_options(),
+      '#default_value' => $settings['duration_format'],
+      '#required' => TRUE,
+    );
+  }
+
+ // return $element;
 }
 
 /**
@@ -313,7 +345,16 @@ function timefield_field_formatter_settings_summary($field, $instance, $view_mod
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
 
-  return t('Current Format') . ': ' . _timefield_display_options($settings['display_format']);
+  if (($display['type']) == 'timefield_default') {
+    return t('Current Format') . ': ' . _timefield_display_options($settings['display_format']);
+  }
+  elseif (($display['type']) == 'timefield_duration') {
+    return t('Current Format') . ': ' . _timefield_duration_options($settings['duration_format']);
+  }
+
+
+
+
 
 }
 
@@ -322,72 +363,34 @@ function timefield_field_formatter_settings_summary($field, $instance, $view_mod
  */
 function template_preprocess_timefield_formatter(&$variables) {
 
-  // Encode the time elements.
-  $variables['time']['value'] = check_plain($variables['time']['value']);
-  $variables['time']['formatted_value'] = trim(timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value']));
-  $variables['time']['time'] = $variables['time']['formatted_value'];
-  if (isset($variables['time']['value2'])) {
-    $variables['time']['value2'] = check_plain($variables['time']['value2']);
-    $variables['time']['formatted_value2'] = trim(timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value2']));
-    $variables['time']['time'] .= ' - ' . $variables['time']['formatted_value2'];
+  if ($variables['format'] == 'default') {
+    // Encode the time elements.
+    $variables['time']['value'] = check_plain($variables['time']['value']);
+    $variables['time']['formatted_value'] = trim(timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value']));
+    $variables['time']['time'] = $variables['time']['formatted_value'];
+    if (isset($variables['time']['value2'])) {
+      $variables['time']['value2'] = check_plain($variables['time']['value2']);
+      $variables['time']['formatted_value2'] = trim(timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value2']));
+      $variables['time']['time'] .= ' - ' . $variables['time']['formatted_value2'];
+    }
   }
-}
-
-/**
- * Callback to alter the property info of time fields.
- *
- * @see timefield_field_info().
- */
-function timefield_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
-  $name = $field['field_name'];
-  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
-  $property['type'] = ($field['cardinality'] != 1) ? 'list<timefield>' : 'timefield';
-  $property['getter callback'] = 'timefield_property_verbatim_get';
-  $property['setter callback'] = 'timefield_property_verbatim_set';
-  $property['property info']['value'] = array(
-    'label' => t('The integer value of the first time value'),
-    'description' => t('The integer value of the first time value'),
-    'type' => 'timefield',
-    'getter callback' => 'timefield_property_verbatim_get',
-    'setter callback' => 'timefield_property_verbatim_set',
-  );
-  $property['property info']['value2'] = array(
-    'label' => t('The integer value of the second time value'),
-    'description' => t('The integer value of the second time value'),
-    'type' => 'timefield',
-    'getter callback' => 'timefield_property_verbatim_get',
-    'setter callback' => 'timefield_property_verbatim_set',
-  );
-
-  unset($property['setter callback']);
-  unset($property['query callback']);
-}
-
-/**
- * Gets the property just as it is set in the data.
- */
-function timefield_property_verbatim_get($data, array $options, $name) {
-
-  if ((is_array($data) || (is_object($data) && $data instanceof ArrayAccess)) && isset($data[$name])) {
-    return $data[$name];
+  elseif ($variables['format'] == 'duration') {
+    // Encode the time elements.
+    $variables['time']['value'] = check_plain($variables['time']['value']);
+    $variables['time']['formatted_value'] = trim(timefield_integer_to_time('g:i a', $variables['time']['value']));
+    if (isset($variables['time']['value2'])) {
+      $variables['time']['value2'] = check_plain($variables['time']['value2']);
+      $variables['time']['formatted_value2'] = trim(timefield_integer_to_time('g:i a', $variables['time']['value2']));
+      $variables['time']['duration'] = timefield_time_to_duration($variables['time']['value'], $variables['time']['value2'], $variables['settings']['duration_format']);
+      $variables['time']['time'] = timefield_time_to_duration($variables['time']['value'], $variables['time']['value2'], $variables['settings']['duration_format']) . ' ' . $variables['settings']['duration_format'];
+    }
+    else {
+      $variables['time']['time'] = 0;
+    }
   }
-  elseif (is_object($data) && isset($data->$name)) {
-    return $data->$name;
-  }
-  return NULL;
-}
 
-/**
- * Sets the property to the given value. May be used as 'setter callback'.
- */
-function timefield_property_verbatim_set(&$data, $name, $value) {
 
-  if (is_array($data) || (is_object($data) && $data instanceof ArrayAccess)) {
-    $data[$name] = $value;
-  }
-  elseif (is_object($data)) {
-    $data->$name = $value;
-  }
+
 }
 
 /**
@@ -427,7 +430,37 @@ function timefield_time_to_integer($value) {
     return 0;
   }
 }
+/* Helper function to return duration value from 2 values, in specified format
+ * @param $value
+ * time format that should be parsable via date_parse().
+ */
+/**
+ * Helper function to return the duration between two values given a certain format
+ */
+function timefield_time_to_duration($value, $value2, $format) {
 
+  if ($value2 < $value) {
+    $value2 += 86400;
+  }
+  $duration = $value2 - $value;
+
+  switch($format) {
+    case 'hours':
+      return round(($duration / 60 / 60), 2);
+      break;
+    case 'minutes':
+      return round(($duration / 60), 2);
+      break;
+    case 'seconds':
+      return $duration;
+      break;
+    case 'time':
+      return timefield_integer_to_time('g:i', $duration);
+      break;
+  }
+
+  return 0;
+}
 /**
  * We manually enumerate time values, since there aren't that many permutations
  * @param $current_option
@@ -443,6 +476,26 @@ function _timefield_display_options($current_option = NULL) {
     'G:i' => date('G:i', time()) . ' -- ' . t('24-hour format, hours without leading zeros'),
     'g:i A' => date('g:i A', time()) . ' -- ' . t('12-hour format, hours without leading zeros'),
     'h:i A' => date('h:i A', time()) . ' -- ' . t('12-hour format, hours with leading zeros'),
+  );
+
+  if (is_null($current_option)) {
+    return $values;
+  }
+  else {
+    return $values[$current_option];
+  }
+}
+
+/**
+ * Helper function providing reasonable defaults for duration formatting
+ */
+function _timefield_duration_options($current_option = NULL) {
+
+  $values = array(
+    'hours' => t('Duration in decimal hours'),
+    'seconds' => t('Duration in seconds'),
+    'minutes' => t('Duration in minutes'),
+    'time' => t('Duration in time format hours'),
   );
 
   if (is_null($current_option)) {
