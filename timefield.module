@@ -75,11 +75,6 @@ function timefield_theme() {
       'template' => 'timefield',
       'path' => drupal_get_path('module', 'timefield') . '/theme',
     ),
-    'timefield_weekly_summary_formatter' => array(
-      'variables' => array('time' => NULL, 'settings' => NULL, 'format' => NULL),
-      'template' => 'timefield-week',
-      'path' => drupal_get_path('module', 'timefield') . '/theme',
-    ),
     'timefield_weekly_summary_minical_box' => array(
       'render element' => 'element',
       'template' => 'timefield-weekly-minical-box',
@@ -104,9 +99,8 @@ function timefield_field_settings_form($field, $instance, $has_data) {
     '#disabled' => $has_data,
   );
   $form['weekly_summary'] = array(
-    '#type' => 'select',
+    '#type' => 'checkbox',
     '#title' => t('Add Weekly Repeat Checkboxes'),
-    '#options' => array(0 => t('No'), 1 => t('Yes')),
     '#description' => t('Should this field include options to specify the days on which it repeats.'),
     '#default_value' => $settings['weekly_summary'],
     '#disabled' => $has_data,
@@ -165,16 +159,8 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#default_value' => isset($settings['input_format']['pm_text']) ? $settings['input_format']['pm_text'] : 'PM',
     '#size' => 10,
   );
-//  $form['input_format']['minute_interval'] = array(
-//    '#title' => t('Minute Interval'),
-//    '#type' => 'textfield',
-//    '#default_value' => isset($settings['input_format']['minute_interval']) ? $settings['input_format']['minute_interval'] : 5,
-//    '#size' => 10,
-//  );
-
 
   return $form;
-
 }
 
 
@@ -207,6 +193,9 @@ function timefield_field_formatter_info() {
       'field types' => array('timefield'),
       'settings' => array(
         'display_format' => array(
+          'separator' => ':',
+          'period_separator' => '',
+          'period' => 'a',
           'hour' => 'g',
           'minute' => 'i',
         ),
@@ -224,16 +213,24 @@ function timefield_field_formatter_info() {
       'field types' => array('timefield'),
       'settings' => array(
         'display_format' => array(
+          'separator' => ':',
+          'period_separator' => '',
+          'period' => 'a',
           'hour' => 'g',
           'minute' => 'i',
         ),
-        'column_format' => 'ga',
+        'column_format' => array(
+          'separator' => ':',
+          'period_separator' => '',
+          'period' => 'a',
+          'hour' => 'g',
+          'minute' => 'i',
+        ),
         'first_day' => 'mon',
         'absolute_start' => '8:00 am',
         'absolute_end' => '10:00 pm',
         'range' => 120,
         'adjust_range' => FALSE,
-        'aggregate_items' => TRUE,
       ),
     ),
   );
@@ -248,44 +245,10 @@ function timefield_field_formatter_info() {
 function timefield_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
+  $instance_settings = $instance['settings'];
 
   $element = array();
 
-//   $form['input_format']['hour'] = array(
-//    '#title' => t('Hour Input Format'),
-//    '#type' => 'select',
-//    '#default_value' => isset($settings['input_format']['hour']) ? $settings['input_format']['hour'] : 'g',
-//    '#options' => _timefield_time_part_format('hour'),
-//  );
-//  $form['input_format']['minute'] = array(
-//    '#title' => t('Minute Input Format'),
-//    '#type' => 'select',
-//    '#default_value' => isset($settings['input_format']['minute']) ? $settings['input_format']['minute'] : 'i',
-//    '#options' => _timefield_time_part_format('minute'),
-//  );
-//  $form['input_format']['showHours'] = array(
-//    '#title' => t('Show Hours'),
-//    '#type' => 'checkbox',
-//    '#default_value' => isset($settings['input_format']['showHours']) ? $settings['input_format']['showHours'] : FALSE,
-//    '#size' => 10,
-//  );
-//  $form['input_format']['showMinutes'] = array(
-//    '#title' => t('Show Minutes'),
-//    '#type' => 'checkbox',
-//    '#default_value' => isset($settings['input_format']['showMinutes']) ? $settings['input_format']['showMinutes'] : FALSE,
-//    '#size' => 10,
-//  );
-
-
-  if ($display['type'] == 'timefield_default') {
-    $element['display_format'] = array(
-      '#title' => t('Time Display Format'),
-      '#type' => 'select',
-      '#options' => _timefield_display_options(),
-      '#default_value' => $settings['display_format'],
-      '#required' => TRUE,
-    );
-  }
   if ($display['type'] == 'timefield_duration') {
 
     $element['duration_format'] = array(
@@ -297,29 +260,33 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
     );
   }
 
+  if ($display['type'] == 'timefield_default') {
+
+  }
+
   if ($display['type'] == 'timefield_weekly_summary_minical') {
+
     static $js_settings = FALSE;
+
     if (!$js_settings) {
-      $js_settings = _timefield_js_settings($settings['display_format']);
-       $element['#attached']['js'][] = array(
-         'data' => array('timefield' => $js_settings),
-         'type' => 'setting',
-       );
+      $js_settings = _timefield_js_settings($instance_settings['input_format']);
+
+      $element['#attached'] = array(
+        'library' => array(
+          array('timefield', 'timepicker')
+        ),
+        'js' =>  array(
+          drupal_get_path('module', 'timefield') . '/js/timefield.js',
+          array(
+            'data' => array('timefield' => $js_settings),
+            'type' => 'setting',
+          )
+        ),
+      );
     }
-    $element['column_format'] = array(
-      '#title' => t('Time Display Format (for the column)'),
-      '#type' => 'select',
-      '#options' => _timefield_display_options(),
-      '#default_value' => $settings['column_format'],
-      '#required' => TRUE,
-    );
-    $element['display_format'] = array(
-      '#title' => t('Time Display Format (for the column)'),
-      '#type' => 'select',
-      '#options' => _timefield_display_options(),
-      '#default_value' => $settings['display_format'],
-      '#required' => TRUE,
-    );
+
+    $element += _timefield_display_format_form('column_format', "Column Time Settings", $settings);
+
     $element['first_day'] = array(
       '#title' => t('First Day of the Week'),
       '#type' => 'select',
@@ -334,14 +301,8 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       '#default_value' => $settings['absolute_start'],
       '#size' => 15,
       '#maxlength' => 15,
-      '#attributes' => array('class' => array('edit-field-weekly-summary-picker')),
-      '#attached' => array(
-        'library' => array(array('timefield', 'timepicker')),
-        'js' =>  array(
-          drupal_get_path('module', 'timefield') . '/js/timefield.js',
-        ),
-      ),
-    );
+      '#attributes' => array('class' => array('edit-timefield-timepicker')),
+     );
     $element['absolute_end'] = array(
       '#title' => t('Mini Cal End Time'),
       '#description' => t('The End Time of the Calendar'),
@@ -349,13 +310,7 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       '#default_value' => $settings['absolute_end'],
       '#size' => 15,
       '#maxlength' => 15,
-      '#attributes' => array('class' => array('edit-field-weekly-summary-picker')),
-      '#attached' => array(
-        'library' => array(array('timefield', 'timepicker')),
-        'js' =>  array(
-          drupal_get_path('module', 'timefield') . '/js/timefield.js',
-        ),
-      ),
+      '#attributes' => array('class' => array('edit-timefield-timepicker')),
     );
     $element['range'] = array(
       '#type' => 'select',
@@ -368,17 +323,59 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       '#title' => t('Adjust Range to fit Items'),
       '#default_value' => $settings['adjust_time'],
     );
-    $element['aggregate_items'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Aggregate Multivalue Fields'),
-      '#description' => t('Multivalue items can be added to a single calendar, or each item can produce a new minicalendar'),
-      '#default_value' => $settings['aggregate_items'],
-    );
 
+  }
+
+  if ($display['type'] == 'timefield_weekly_summary_minical' || $display['type'] == 'timefield_default') {
+    $element += _timefield_display_format_form('display_format', "Individual Time Display Settings", $settings);
   }
 
   return $element;
 }
+
+
+function _timefield_display_format_form($name, $fieldset_header, $settings) {
+
+  $element[$name] = array(
+    '#title' => $fieldset_header,
+    '#type' => 'fieldset',
+  );
+  $element[$name]['hour'] = array(
+    '#title' => t('Hour Format'),
+    '#type' => 'select',
+    '#default_value' => isset($settings[$name]['hour']) ? $settings[$name]['hour'] : 'g',
+    '#options' => _timefield_time_part_format('hour'),
+  );
+  $element[$name]['minute'] = array(
+    '#title' => t('Minute Format'),
+    '#type' => 'select',
+    '#default_value' => isset($settings[$name]['minute']) ? $settings[$name]['minute'] : 'i',
+    '#options' => _timefield_time_part_format('minute'),
+  );
+  $element[$name]['separator'] = array(
+    '#title' => t('Hour and Minute Separator'),
+    '#type' => 'textfield',
+    '#default_value' => isset($settings[$name]['separator']) ? $settings[$name]['separator'] : ':',
+    '#size' => 10,
+  );
+  $element[$name]['period'] = array(
+    '#title' => t('AM/PM format'),
+    '#type' => 'select',
+    '#default_value' => isset($settings[$name]['period']) ? $settings[$name]['period'] : 'a',
+    '#options' => _timefield_time_part_format('period'),
+  );
+  $element[$name]['period_separator'] = array(
+    '#title' => t('What character should appear between the time and the Period (AM/PM)'),
+    '#type' => 'textfield',
+    '#default_value' => isset($settings[$name]['period_separator']) ? $settings[$name]['period_separator'] : '',
+    '#size' => 10,
+  );
+
+  return $element;
+
+}
+
+
 
 /**
  * Implements hook_field_formatter_settings_summary().
@@ -389,14 +386,15 @@ function timefield_field_formatter_settings_summary($field, $instance, $view_mod
   $field_settings = $field['settings'];
 
   if (($display['type']) == 'timefield_default') {
-    return t('Current Format') . ': ' . _timefield_display_options($settings['display_format']);
+    $current_time = timefield_time_to_integer(date('g:ia', strtotime("now")));
+    return t('Current Format') . ': ' . timefield_integer_to_time($settings['display_format'], $current_time);
   }
   elseif (($display['type']) == 'timefield_duration') {
     if (empty($field_settings['totime'])) {
       return t('This display format is invalid for the current field configuration');
     }
     else {
-      return t('Current Format') . ': ' . _timefield_duration_options($settings['duration_format']);
+      return t('Current Format') . ': ';
     }
   }
   elseif (($display['type']) == 'timefield_weekly_summary_minical') {
@@ -509,6 +507,7 @@ function timefield_field_is_empty($item, $field) {
 function timefield_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
 
   $settings = $display['settings'];
+  $settings += $field['settings'];
   $element = array();
 
   switch ($display['type']) {
@@ -534,7 +533,7 @@ function timefield_field_formatter_view($entity_type, $entity, $field, $instance
         );
       }
       break;
-    case 'weekly_summary_minical':
+    case 'timefield_weekly_summary_minical':
 
       $header = _timefield_weekly_summary_build_header($settings['first_day']);
       $rows = timefield_weekly_summary_build_rows($items, $header, $settings);
@@ -543,7 +542,6 @@ function timefield_field_formatter_view($entity_type, $entity, $field, $instance
         '#header' => $header,
         '#rows' => $rows,
         '#theme' => 'table',
-       // '#attributes' => array('style' => 'position:relative')
       );
 
       break;
@@ -559,6 +557,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
 
   $settings = $field['settings'];
   $instance_settings = $instance['settings'];
+  $display_settings = $instance['display']['default']['settings'];
 
   $element += array(
     '#delta' => $delta,
@@ -577,9 +576,8 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
   switch ($instance['widget']['type']) {
     case 'timefield_standard':
 
-            // We don't want to add our settings more than once
+      // We don't want to add our settings more than once
       static $js_settings = FALSE;
-
 
       $element += array(
         '#title' => 'Time',
@@ -596,10 +594,10 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
 
       if (!$js_settings) {
         $js_settings = _timefield_js_settings($instance_settings['input_format']);
-         $element['#attached']['js'][] = array(
-           'data' => array('timefield' => $js_settings),
-           'type' => 'setting',
-         );
+        $element['#attached']['js'][] = array(
+          'data' => array('timefield' => $js_settings),
+          'type' => 'setting',
+        );
       }
 
       if ($settings['weekly_summary']) {
@@ -613,15 +611,14 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         );
       }
 
-
       $element['value'] = array(
         '#title' => t('Time'),
         '#description' => t('Enter a time value, in any format'),
         '#type' => 'textfield',
-        '#default_value' => timefield_integer_to_time($instance_settings['input_format'], $value),
+        '#default_value' => timefield_integer_to_time($display_settings['display_format'], $value),
         '#size' => 15,
         '#maxlength' => 15,
-        '#attributes' => array('class' => array('edit-timefield-summary-picker')),
+        '#attributes' => array('class' => array('edit-timefield-timepicker')),
       );
 
       // Add second element if totime is required or optional
@@ -630,10 +627,10 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
           '#title' => t('End Time'),
           '#description' => t('Enter a time value, in any format'),
           '#type' => 'textfield',
-          '#default_value' => timefield_integer_to_time($settings['input_format'], $value2),
+          '#default_value' => timefield_integer_to_time($display_settings['display_format'], $value2),
           '#size' => 15,
           '#maxlength' => 15,
-          '#attributes' => array('class' => array('edit-timefield-summary-picker')),
+          '#attributes' => array('class' => array('edit-timefield-timepicker')),
         );
       }
 
@@ -644,19 +641,35 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
           '#type' => 'checkboxes',
           '#options' => _timefield_weekly_summary_days(),
           '#default_value' => $days,
-          '#attributes' => array('class' => array('edit-field-weekly-summary-days')),
+          '#attributes' => array('class' => array('edit-field-timefield-days')),
         );
       }
 
       break;
   }
-
   return $element;
 }
 
 
-
-
+/**
+ * Implements hook_field_load().
+ *
+ * Where possible, generate the formatted version of each field early so that
+ * it is cached in the field cache.
+ *
+ * Also we do this so the entity property callbacks can return intelligible results
+ *
+ */
+function timefield_field_load($entity_type, $entities, $field, $instances, $langcode, &$items) {
+  foreach ($entities as $id => $entity) {
+    foreach ($items[$id] as $delta => $item) {
+      if ($field['type'] == 'timefield' && isset($instances[$id]['display']['default']['settings'])) {
+        $items[$id][$delta]['value_formatted'] = isset($item['value']) ? timefield_integer_to_time($instances[$id]['display']['default']['settings']['display_format'], $item['value']) : '';
+        $items[$id][$delta]['value2_formatted'] = isset($item['value2']) ? timefield_integer_to_time($instances[$id]['display']['default']['settings']['display_format'], $item['value2']) : '';
+      }
+    }
+  }
+}
 
 /**
  * Preprocess function for the timefield formatter.
@@ -673,6 +686,19 @@ function template_preprocess_timefield_formatter(&$variables) {
       $variables['time']['formatted_value2'] = trim(timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value2']));
       $variables['time']['time'] .= ' - ' . $variables['time']['formatted_value2'];
     }
+
+    if ($variables['settings']['weekly_summary']) {
+      foreach(_timefield_weekly_summary_days() as $day => $day_text) {
+        if ((bool) $variables['time'][$day]) {
+          $days[$day] = $day_text;
+        }
+      }
+      if ($days) {
+        $variables['time']['days'] = $days;
+        $variables['time']['time'] = implode(', ', $days) . ' ' . $variables['time']['time'];
+      }
+
+    }
   }
   elseif ($variables['format'] == 'duration') {
     // Encode the time elements.
@@ -688,9 +714,6 @@ function template_preprocess_timefield_formatter(&$variables) {
       $variables['time']['time'] = 0;
     }
   }
-
-
-
 }
 
 function template_preprocess_timefield_weekly_summary_minical_box(&$variables) {
@@ -705,7 +728,14 @@ function template_preprocess_timefield_weekly_summary_minical_box(&$variables) {
   $variables['classes'] = implode(' ', $variables['classes_array']);
 }
 
+function timefield_build_time_format($settings) {
 
+  $format = $settings['hour'];
+  $format .= $settings['minute'] == 'none' ? '' : $settings['separator'] . $settings['minute'];
+  $format .= $settings['period'] == 'none' ? '' : $settings['period_separator'] . $settings['period'];
+
+  return $format;
+}
 
 /**
  * helper function to return time value from integer
@@ -714,7 +744,8 @@ function template_preprocess_timefield_weekly_summary_minical_box(&$variables) {
  * @param $value
  * the integer value to be converted
  */
-function timefield_integer_to_time($format, $value) {
+function timefield_integer_to_time($settings, $value) {
+  $format = timefield_build_time_format($settings);
   if (!strlen($value) == 0) {
     if ($value >= 86400) {
       $value = $value - 86400;
@@ -767,40 +798,12 @@ function timefield_time_to_duration($value, $value2, $format) {
       return $duration;
       break;
     case 'time':
-      return timefield_integer_to_time('g:i', $duration);
+      //@TODO: fix me
+      return '';// timefield_integer_to_time('g:i', $duration);
       break;
   }
 
   return 0;
-}
-/**
- * We manually enumerate time values, since there aren't that many permutations
- * @param $current_option
- * optional parameter that will return the string description of the current format
- * If no parameter is provided, an array of all possible values are returned
- */
-function _timefield_display_options($current_option = NULL) {
-
-  $values = array(
-    'g:i a' => date('g:i a', time()) . ' -- ' . t('12-hour format, hours without leading zeros'),
-    'h:i a' => date('h:i a', time()) . ' -- ' . t('12-hour format, hours with leading zeros'),
-    'H:i' => date('H:i', time()) . ' -- ' . t('24-hour format, hours with leading zeros'),
-    'G:i' => date('G:i', time()) . ' -- ' . t('24-hour format, hours without leading zeros'),
-    'g:i A' => date('g:i A', time()) . ' -- ' . t('12-hour format, hours without leading zeros'),
-    'h:i A' => date('h:i A', time()) . ' -- ' . t('12-hour format, hours with leading zeros'),
-    'H\h' => date('H\h', time()) . ' -- ' . t('24-hour format, hours with leading zeros, no minutes'),
-    'G\h' => date('G\h', time()) . ' -- ' . t('24-hour format, hours without leading zeros, no minutes'),
-    'g A' => date('g A', time()) . ' -- ' . t('12-hour format, hours without leading zeros, no minutes'),
-    'h A' => date('h A', time()) . ' -- ' . t('12-hour format, hours with leading zeros, no minutes'),
-    'ga' => date('ga', time()) . ' -- ' . t('12-hour format, hours without leading zeros, no minutes'),
-    'ha' => date('ha', time()) . ' -- ' . t('12-hour format, hours with leading zeros, no minutes'),
-  );
-
-
-  if ($current_option) {
-    return $values[$current_option];
-  }
-  return $values;
 }
 
 
@@ -814,6 +817,12 @@ function _timefield_time_part_format($part) {
     ),
     'minute' => array(
       'i' => t('Minutes with leading Zeros'),
+      'none' => t('Do not display minutes'),
+    ),
+    'period' => array(
+      'a' => 'Lowercase Ante meridiem and Post meridiem (am/pm)',
+      'A' => 'Uppercase Ante meridiem and Post meridiem (AM/PM)',
+      'none' => 'Do not display period',
     ),
   );
 
@@ -912,50 +921,56 @@ function _timefield_weekly_summary_days_map($item) {
 function timefield_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
   $name = $field['field_name'];
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
-
   $property['type'] = ($field['cardinality'] != 1) ? 'list<timefield>' : 'timefield';
   $property['getter callback'] = 'entity_metadata_field_verbatim_get';
   $property['setter callback'] = 'entity_metadata_field_verbatim_set';
   $property['property info'] = array(
-   'label' => array(
+    'value' => array(
+      'label' => t('Integer offset for the Start Time'),
+      'type'  => 'integer',
+      'getter callback' => 'entity_property_verbatim_get',
+    ),
+    'value_formatted' => array(
+      'label' => t('Start Time'),
+      'type'  => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+     ),
+  );
+
+  if (!empty($field['settings']['totime'])) {
+    $property['property info']['value2'] = array(
+      'label' => t('Integer Offset for the End Time'),
+      'type'  => 'integer',
+      'getter callback' => 'entity_property_verbatim_get',
+     );
+     $property['property info']['value2_formatted'] = array(
+      'label' => t('End Time'),
+      'type'  => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+     );
+  }
+
+  if ($field['settings']['weekly_summary']) {
+    $property['property info']['label'] = array(
       'label' => t('Label'),
       'description' => t('The label of this weekly schedule'),
       'type' => 'text',
       'getter callback' => 'entity_property_verbatim_get',
       'setter callback' => 'entity_property_verbatim_set',
-    ),
-    'value' => array(
-      'label' => t('Start Time'),
-      'type'  => 'int',
-      'getter callback' => 'timefield_field_value_callback',
-    ),
-    'value2' => array(
-      'label' => t('End Time'),
-      'type'  => 'int',
-      'getter callback' => 'timefield_field_value_callback',
-    ),
-  );
-
-  foreach(_timefield_weekly_summary_days() as $index => $label) {
-    $property['property info'][$index] = array(
-      'label' => $label,
-      'description' => t('If this schedule applies to !day', array('!day' => $day)),
-      'type' => 'boolean',
-      'getter callback' => 'entity_property_verbatim_get',
-      'setter callback' => 'entity_property_verbatim_set',
     );
+
+    foreach(_timefield_weekly_summary_days() as $index => $label) {
+      $property['property info'][$index] = array(
+        'label' => $label,
+        'description' => t('If this schedule applies to !day', array('!day' => $label)),
+        'type' => 'boolean',
+        'getter callback' => 'entity_property_verbatim_get',
+        'setter callback' => 'entity_property_verbatim_set',
+      );
+    }
   }
 
   unset($property['query callback']);
-}
-
-
-function timefield_field_value_callback($data, array $options, $name) {
-  if ((is_array($data) || (is_object($data) && $data instanceof ArrayAccess))) {
-    return timefield_integer_to_time($data['value']);
-  }
-  return NULL;
-
 }
 
 
@@ -1052,8 +1067,8 @@ function _timefield_weekly_summary_explode_items(&$items) {
 }
 
 function _timefield_weekly_summary_time_sort($a, $b) {
-  $calca = _weekly_summary_week_time_offset($a);
-  $calcb = _weekly_summary_week_time_offset($b);
+  $calca = _timefield_weekly_summary_week_time_offset($a);
+  $calcb = _timefield_weekly_summary_week_time_offset($b);
   if ($calca == $calcb) {
     return 0;
   }

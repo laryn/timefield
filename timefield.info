@@ -3,4 +3,5 @@ description = Implements a time field (HH:MM), with optional to time.
 core = 7.x
 package = Fields
 
+files[] = views/timefield_plugin_style_minical.inc
 files[] = timefield.test

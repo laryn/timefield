@@ -17,6 +17,8 @@
  * $time['value2'] - integer value of second time, expressed as timezone
  * agnostic offset from 00:00
  *
+ * If this is a weekly repeat, the following array will also be available
+ * $time['days'] - an array of days, keyed by 3 letter signifier
  *
  */
 ?>

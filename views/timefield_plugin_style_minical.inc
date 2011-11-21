@@ -103,19 +103,30 @@ class timefield_plugin_style_minical extends views_plugin_style {
     }
 
     $settings = array(
-      'display_format' => 'g:i a',
-      'column_format' => 'ga',
+      'display_format' => array(
+        'separator' => ':',
+        'period_separator' => '',
+        'period' => 'a',
+        'hour' => 'g',
+        'minute' => 'i',
+      ),
+      'column_format' => array(
+        'separator' => ':',
+        'period_separator' => '',
+        'period' => 'a',
+        'hour' => 'g',
+        'minute' => 'i',
+      ),
       'first_day' => 'mon',
       'absolute_start' => '8:00 am',
       'absolute_end' => '10:00 pm',
       'range' => 120,
       'adjust_range' => FALSE,
-      'aggregate_items' => TRUE,
     );
 
     if (!empty($raw_data)) {
-      $header = _timefield_build_header($settings['first_day']);
-      $rows = timefield_build_rows($raw_data, $header, $settings);
+      $header = _timefield_weekly_summary_build_header($settings['first_day']);
+      $rows = timefield_weekly_summary_build_rows($raw_data, $header, $settings);
 
       $element = array(
         '#header' => $header,

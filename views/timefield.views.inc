@@ -15,8 +15,8 @@ function timefield_views_plugins() {
     'module' => 'timefield',
     'style' => array(
       'timefield_minical' => array(
-        'title' => t('Weekly Summary MiniCal'),
-        'help' => t('Displays a Mini Summary of Weekly Schedule.'),
+        'title' => t('Timefield MiniCal'),
+        'help' => t('Displays a Mini Summary of Timefield.'),
         'handler' => 'timefield_plugin_style_minical',
         'theme' => 'timefield_minical',
         'theme path' => drupal_get_path('module', 'timefield') .'/views',
