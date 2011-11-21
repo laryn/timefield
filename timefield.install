@@ -12,38 +12,71 @@ function timefield_field_schema($field) {
 
   $db_columns = array();
 
-//  $db_columns['value'] = array(
-//    'type' => 'varchar',
-//    'mysql_type' => 'time',
-//    'pgsql_type' => 'time',
-//    'length' => 8,
-//    'not null' => TRUE
-//  );
-//
-//  if (!empty($field['settings']['totime'])) {
-//    $db_columns['value2'] = array(
-//      'type' => 'varchar',
-//      'mysql_type' => 'time',
-//      'pgsql_type' => 'time',
-//      'length' => 8,
-//      'not null' => TRUE
-//    );
-//
-//  }
-
-
   $db_columns['value'] = array(
     'type' => 'int',
     'not null' => FALSE,
   );
 
-
   // If a second time is needed for 'To time', just make a copy of the first one.
   if (!empty($field['settings']['totime'])) {
     $db_columns['value2'] = $db_columns['value'];
-
   }
 
+  // If a weekly schedule option selected add in additional columns
+  if (!empty($field['settings']['weekly_summary'])) {
+
+    $db_columns += array(
+      'label' => array(
+        'description' => 'A label for this weekly schedule',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'mon' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tue' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'wed' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'thu' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'fri' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'sat' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'sun' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    );
+  }
 
   return array('columns' => $db_columns);
 }
