@@ -4,4 +4,5 @@ core = 7.x
 package = Fields
 
 files[] = views/timefield_plugin_style_minical.inc
+files[] = views/timefield_views_handler_filter_day.inc
 files[] = timefield.test
