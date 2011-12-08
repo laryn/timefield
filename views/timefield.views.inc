@@ -19,8 +19,8 @@ function timefield_views_plugins() {
         'help' => t('Displays a Mini Summary of Timefield.'),
         'handler' => 'timefield_plugin_style_minical',
         'theme' => 'timefield_minical',
-        'theme path' => drupal_get_path('module', 'timefield') .'/views',
-        'path' => drupal_get_path('module', 'timefield') .'/views',
+        'theme path' => drupal_get_path('module', 'timefield') . '/views',
+        'path' => drupal_get_path('module', 'timefield') . '/views',
         'uses fields' => TRUE,
         'uses row plugin' => FALSE,
         'uses options' => TRUE,
@@ -41,11 +41,9 @@ function timefield_views_plugins() {
 function timefield_field_views_data($field) {
   $data = field_views_field_default_views_data($field);
 
-  foreach($data as $field => $element) {
+//   foreach ($data as $field => $element) {
 
-
-  }
- dpm($data);
+//   }
 
 
   return $data;
@@ -70,4 +68,3 @@ function timefield_field_views_data_alter(&$data, $field, $module) {
 //  }
 
 }
-

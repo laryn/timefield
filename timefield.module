@@ -110,7 +110,7 @@ function timefield_field_settings_form($field, $instance, $has_data) {
 }
 
 /*
- *
+ * Implements hook_field_instance_settings_form().
  */
 function timefield_field_instance_settings_form($field, $instance) {
   $settings = $instance['settings'];
@@ -333,11 +333,22 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
   return $element;
 }
 
-
+/**
+ *
+ * Helper Function to build settings form
+ * @param string $name
+ *   The name of the element array
+ * @param string $fieldset_header
+ *   The title for the fieldset
+ * @param array $settings
+ *   The settings parameters
+ * @return array $element
+ *   Form Element
+ */
 function _timefield_display_format_form($name, $fieldset_header, $settings) {
 
   $element[$name] = array(
-    '#title' => $fieldset_header,
+    '#title' => check_plain($fieldset_header),
     '#type' => 'fieldset',
   );
   $element[$name]['hour'] = array(
@@ -413,10 +424,7 @@ function timefield_field_formatter_settings_summary($field, $instance, $view_mod
 
 
 /**
- * validate callback for the timefield element
- * @param $element
- * @param $form_state
- * @param $form
+ * Element validation function
  */
 function timefield_time_validate($element, &$form_state, $form) {
 
@@ -455,7 +463,7 @@ function timefield_time_validate($element, &$form_state, $form) {
     }
 
     if (!empty($values['days'])) {
-      foreach($values['days'] as $index => $day) {
+      foreach ($values['days'] as $index => $day) {
         $new_values[$index] = ($day === 0) ? $day : 1;
       }
     }
@@ -688,7 +696,7 @@ function template_preprocess_timefield_formatter(&$variables) {
     }
 
     if ($variables['settings']['weekly_summary']) {
-      foreach(_timefield_weekly_summary_days() as $day => $day_text) {
+      foreach (_timefield_weekly_summary_days() as $day => $day_text) {
         if ((bool) $variables['time'][$day]) {
           $days[$day] = $day_text;
         }
@@ -716,6 +724,10 @@ function template_preprocess_timefield_formatter(&$variables) {
   }
 }
 
+/*
+ * Template preprocess function for the minical box.  Every element added to a
+ * minical will be themed with this function.
+ */
 function template_preprocess_timefield_weekly_summary_minical_box(&$variables) {
 
 
@@ -738,11 +750,13 @@ function timefield_build_time_format($settings) {
 }
 
 /**
- * helper function to return time value from integer
- * @param $format
- * the php date format
- * @param $value
- * the integer value to be converted
+ *
+ * Helper function to return time value from integer
+ *
+ * @param array $settings
+ *   format settings
+ * @param integer $value
+ *   the integer value to be converted
  */
 function timefield_integer_to_time($settings, $value) {
   $format = timefield_build_time_format($settings);
@@ -759,8 +773,9 @@ function timefield_integer_to_time($settings, $value) {
 
 /**
  * Helper function to return interer value from time format
- * @param $value
- * time format that should be parsable via date_parse().
+ *
+ * @param string $value
+ *   time format that should be parsable via date_parse().
  */
 function timefield_time_to_integer($value) {
   $time = date_parse($value);
@@ -776,9 +791,13 @@ function timefield_time_to_integer($value) {
   }
 }
 
-/* Helper function to return duration value from 2 values, in specified format
- * @param $value
- * time format that should be parsable via date_parse().
+/**
+ *
+ * Helper function to return duration value from 2 values, in specified format
+ *
+ * @param integer $value
+ * @param integer $value2
+ * @param string $format
  */
 function timefield_time_to_duration($value, $value2, $format) {
 
@@ -787,7 +806,7 @@ function timefield_time_to_duration($value, $value2, $format) {
   }
   $duration = $value2 - $value;
 
-  switch($format) {
+  switch ($format) {
     case 'hours':
       return round(($duration / 60 / 60), 2);
       break;
@@ -806,7 +825,9 @@ function timefield_time_to_duration($value, $value2, $format) {
   return 0;
 }
 
-
+/*
+ * Helper function to build an options array
+ */
 function _timefield_time_part_format($part) {
   $values = array(
     'hour' => array(
@@ -830,7 +851,7 @@ function _timefield_time_part_format($part) {
 }
 
 /**
- * Helper function providing reasonable defaults for duration formatting
+ * Helper function to build options array
  */
 function _timefield_duration_options($current_option = NULL) {
 
@@ -852,7 +873,7 @@ function _timefield_duration_options($current_option = NULL) {
 /**
  * helper function to return settings usable for the jquery.timepicker.js library
  * @param $settings
- * The currentlt defined display settings, in PHP date() format.
+ *   The currently defined display settings.
  */
 function _timefield_js_settings($settings) {
 
@@ -883,7 +904,9 @@ function timefield_views_api() {
   );
 }
 
-
+/*
+ * Helper function days array
+ */
 function _timefield_weekly_summary_days() {
   $days = array(
     'mon' => t('Monday'),
@@ -899,6 +922,9 @@ function _timefield_weekly_summary_days() {
   return $days;
 }
 
+/*
+ * Map first day of week
+ */
 function _timefield_weekly_summary_days_map($item) {
 
   $days = _timefield_weekly_summary_days();
@@ -908,7 +934,6 @@ function _timefield_weekly_summary_days_map($item) {
   }
 
   return $output;
-
 }
 
 
@@ -959,7 +984,7 @@ function timefield_property_info_callback(&$info, $entity_type, $field, $instanc
       'setter callback' => 'entity_property_verbatim_set',
     );
 
-    foreach(_timefield_weekly_summary_days() as $index => $label) {
+    foreach (_timefield_weekly_summary_days() as $index => $label) {
       $property['property info'][$index] = array(
         'label' => $label,
         'description' => t('If this schedule applies to !day', array('!day' => $label)),
@@ -974,14 +999,16 @@ function timefield_property_info_callback(&$info, $entity_type, $field, $instanc
 }
 
 
-
+/*
+ * Helper function to build the header for the minical table
+ */
 function _timefield_weekly_summary_build_header($first_day) {
   $days = _timefield_weekly_summary_days();
   $day_list = $days;
 
   $header = array('time' => t('Time'));
   $found_header = FALSE;
-  foreach($days as $index => $day) {
+  foreach ($days as $index => $day) {
     if ($index ==$first_day) {
       $found_header = TRUE;
     }
@@ -995,6 +1022,9 @@ function _timefield_weekly_summary_build_header($first_day) {
   return $header;
 }
 
+/*
+ * Add rows to the table
+ */
 function timefield_weekly_summary_build_rows($item, $header, $settings) {
 
   _timefield_weekly_summary_explode_items($item);
@@ -1006,13 +1036,19 @@ function timefield_weekly_summary_build_rows($item, $header, $settings) {
   $cell_data = array();
   $count = 0;
 
-  foreach($times as $time_index => $time) {
+  foreach ($times as $time_index => $time) {
     $row['time'] = array('data' => $time['display']);
-    if (!isset($cell_data[$time_index])) { $cell_data[$time_index] = array(); }
-    foreach($header as $index => $label) {
-      if($index == 'time') { continue; }
-      if (!isset($cell_data[$time_index][$index])) { $cell_data[$time_index][$index] = array(); }
-      foreach($item as $i => $v) {
+    if (!isset($cell_data[$time_index])) {
+      $cell_data[$time_index] = array();
+    }
+    foreach ($header as $index => $label) {
+      if ($index == 'time') {
+        continue;
+      }
+      if (!isset($cell_data[$time_index][$index])) {
+        $cell_data[$time_index][$index] = array();
+      }
+      foreach ($item as $i => $v) {
         if ($v['value'] >= $time['start'] && $v['value'] < $time['stop'] && $v[$index] == '1') {
           $row_data = array(
             'element' => $v,
@@ -1036,12 +1072,14 @@ function timefield_weekly_summary_build_rows($item, $header, $settings) {
   return $rows;
 }
 
-
+/*
+ * Explode time items for sorting
+ */
 function _timefield_weekly_summary_explode_items(&$items) {
 
   $new_array = array();
-  foreach($items as $item) {
-    foreach(array_keys(_timefield_weekly_summary_days()) as $day) {
+  foreach ($items as $item) {
+    foreach (array_keys(_timefield_weekly_summary_days()) as $day) {
       if ($item[$day]) {
         $ar = array(
           'label' => $item['label'],
@@ -1066,6 +1104,9 @@ function _timefield_weekly_summary_explode_items(&$items) {
   $items = $new_array;
 }
 
+/*
+ * uasort callback function
+ */
 function _timefield_weekly_summary_time_sort($a, $b) {
   $calca = _timefield_weekly_summary_week_time_offset($a);
   $calcb = _timefield_weekly_summary_week_time_offset($b);
@@ -1075,7 +1116,11 @@ function _timefield_weekly_summary_time_sort($a, $b) {
   return ($calca < $calcb) ? -1 : 1;
 }
 
-
+/*
+ * calculate offset from beginning of week
+ *
+ * @TODO: configure for custom start day of week
+ */
 function _timefield_weekly_summary_week_time_offset($elem) {
   $multiplier = 60 * 60 * 24;
   if ($elem['mon']) {
@@ -1103,7 +1148,9 @@ function _timefield_weekly_summary_week_time_offset($elem) {
 
 }
 
-
+/*
+ * Helper function to build the time column for the minical table.
+ */
 function _timefield_weekly_summary_build_time_column($settings, $start_times = array()) {
 
   $time_array = array();
@@ -1122,7 +1169,7 @@ function _timefield_weekly_summary_build_time_column($settings, $start_times = a
     $time_array[$current] = array(
       'start' => $current,
       'stop' => $current + $step_amount,
-      'display' =>timefield_integer_to_time($settings['column_format'], $current) . ' - ' . timefield_integer_to_time($settings['column_format'], $current +  $step_amount),
+      'display' => timefield_integer_to_time($settings['column_format'], $current) . ' - ' . timefield_integer_to_time($settings['column_format'], $current +  $step_amount),
       'last_row' => ($index + 1 == $steps) ? TRUE : FALSE,
     );
     $current += $step_amount;

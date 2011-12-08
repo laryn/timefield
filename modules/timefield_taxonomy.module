@@ -299,4 +299,3 @@ function _timefield_taxonomy_aggregate_tags($tags, $field_cardinality) {
   }
   return $agg_tags;
 }
-
