@@ -66,7 +66,7 @@ function drush_timefield_plugin() {
   chdir($path);
 
   $filename = basename(TIMEFIELD_DOWNLOAD_URI);
-  $dirname =  'jquery.timepicker';
+  $dirname = 'jquery.timepicker';
 
   // Remove any existing timepicker plugin directory.
   if (is_dir($dirname)) {

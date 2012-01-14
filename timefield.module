@@ -849,9 +849,9 @@ function _timefield_time_part_format($part) {
       'none' => t('Do not display minutes'),
     ),
     'period' => array(
-      'a' => 'Lowercase Ante meridiem and Post meridiem (am/pm)',
-      'A' => 'Uppercase Ante meridiem and Post meridiem (AM/PM)',
-      'none' => 'Do not display period',
+      'a' => t('Lowercase Ante meridiem and Post meridiem (am/pm)'),
+      'A' => t('Uppercase Ante meridiem and Post meridiem (AM/PM)'),
+      'none' => t('Do not display period'),
     ),
   );
 

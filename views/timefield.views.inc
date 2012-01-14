@@ -16,7 +16,7 @@ function timefield_views_plugins() {
       'timefield_minical' => array(
         'title' => t('Timefield MiniCal'),
         'help' => t('Displays a Mini Summary of Timefield.'),
-        'handler' => 'timefield_plugin_style_minical',
+        'handler' => 'TimefieldPluginStyleMinical',
         'theme' => 'timefield_minical',
         'theme path' => drupal_get_path('module', 'timefield') . '/views',
         'path' => drupal_get_path('module', 'timefield') . '/views',
