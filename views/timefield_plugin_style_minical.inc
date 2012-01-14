@@ -10,7 +10,7 @@
  * @class
  * Extension of the Views Plugin Syle for
  */
-class timefield_plugin_style_minical extends views_plugin_style {
+class TimefieldPluginStyleMinical extends views_plugin_style {
   /**
    * Set default options
    */
