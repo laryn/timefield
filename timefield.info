@@ -2,7 +2,6 @@ name = Time Field
 description = Implements a time field (HH:MM), with optional to time.
 core = 7.x
 package = Fields
-
+dependencies[] = libraries
 files[] = views/timefield_plugin_style_minical.inc
-files[] = views/timefield_views_handler_filter_day.inc
 files[] = timefield.test

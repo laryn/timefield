@@ -66,7 +66,7 @@ function drush_timefield_plugin() {
   chdir($path);
 
   $filename = basename(TIMEFIELD_DOWNLOAD_URI);
-  $dirname = basename(TIMEFIELD_DOWNLOAD_URI, '.zip');
+  $dirname =  'jquery.timepicker';
 
   // Remove any existing timepicker plugin directory.
   if (is_dir($dirname)) {
@@ -84,7 +84,7 @@ function drush_timefield_plugin() {
 
   if (is_file($filename)) {
     // Decompress the zip archive.
-    drush_shell_exec('unzip -qq -o ' . $filename);
+    drush_shell_exec('unzip -qq -o ' . $filename . ' -d ' . $dirname);
     // Remove the zip archive.
     drush_op('unlink', $filename);
   }
