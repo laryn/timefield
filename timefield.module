@@ -47,19 +47,26 @@ function timefield_field_info() {
  */
 function timefield_library() {
 
-  $path = drupal_get_path('module', 'timefield');
+  $libraries = array();
 
-  $libraries['timepicker'] = array(
-    'title' => 'Timepicker',
-    'website' => 'http://fgelinas.com/code/timepicker',
-    'version' => '7.x',
-    'js' => array($path . '/js/jquery.ui.timepicker.min.js' => array()),
-    'css' => array($path . '/css/jquery-ui-timepicker.css' => array()),
-    'dependencies' => array(
-      array('system', 'ui'),
-      array('system', 'ui.position'),
-    ),
-  );
+  $libs = libraries_get_libraries();
+
+  if (array_key_exists('jquery.timepicker', $libs)) {
+
+    $path = $libs['jquery.timepicker'];
+
+    $libraries['timepicker'] = array(
+      'title' => 'Timepicker',
+      'website' => 'http://fgelinas.com/code/timepicker',
+      'version' => '7.x',
+      'js' => array($path . '/jquery.ui.timepicker.js' => array()),
+      'css' => array($path . '/css/jquery-ui-timepicker.css' => array()),
+      'dependencies' => array(
+        array('system', 'ui'),
+        array('system', 'ui.position'),
+      ),
+    );
+  }
 
   return $libraries;
 }
