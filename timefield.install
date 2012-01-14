@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_field_schema()
+ * Implements hook_field_schema().
  */
 function timefield_field_schema($field) {
 
@@ -17,12 +17,12 @@ function timefield_field_schema($field) {
     'not null' => FALSE,
   );
 
-  // If a second time is needed for 'To time', just make a copy of the first one.
+  // If second time is needed for 'To time', just make a copy of the first one.
   if (!empty($field['settings']['totime'])) {
     $db_columns['value2'] = $db_columns['value'];
   }
 
-  // If a weekly schedule option selected add in additional columns
+  // If a weekly schedule option selected add in additional columns.
   if (!empty($field['settings']['weekly_summary'])) {
 
     $db_columns += array(

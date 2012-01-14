@@ -33,8 +33,6 @@ class timefield_plugin_style_minical extends views_plugin_style {
       '' => '<none>',
     );
 
-
-
     foreach ($handlers as $handle) {
       $box_source_options[$handle->options['id']] = (!empty($handle->options['label'])) ? $handle->options['label'] : $handle->options['id'];
 
@@ -50,7 +48,6 @@ class timefield_plugin_style_minical extends views_plugin_style {
     }
     else {
 
-      // Map Preset
       $form['data_source'] = array(
         '#type' => 'select',
         '#title' => t('Data Source'),
@@ -65,9 +62,6 @@ class timefield_plugin_style_minical extends views_plugin_style {
         '#options' => $box_source_options,
         '#default_value' => $this->options['box_source'] ? $this->options['box_source'] : '',
       );
-
-
-
     }
   }
 
@@ -95,11 +89,9 @@ class timefield_plugin_style_minical extends views_plugin_style {
           foreach ($times as $item) {
             $item['raw']['label'] = $description;
             $raw_data[] = $item['raw'];
-
           }
         }
       }
-
     }
 
     $settings = array(
@@ -132,13 +124,11 @@ class timefield_plugin_style_minical extends views_plugin_style {
         '#header' => $header,
         '#rows' => $rows,
         '#theme' => 'table',
-       // '#attributes' => array('style' => 'position:relative')
       );
     }
     else {
       $element = array('#markup' => 'No content');
     }
-
 
     return drupal_render($element);
   }

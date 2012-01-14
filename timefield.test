@@ -7,6 +7,9 @@
 
 class TimeFieldTest extends DrupalWebTestCase {
 
+  /**
+   * Implements getInfo().
+   */
   public static function getInfo() {
     return array(
       'name' => 'timefield',
@@ -14,6 +17,10 @@ class TimeFieldTest extends DrupalWebTestCase {
       'group' => 'Fields',
     );
   }
+
+  /**
+   * Overrides setUp()
+   */
   function setUp() {
     // Enable the timefield module.
     parent::setUp(array('field_ui', 'timefield'));
@@ -65,7 +72,7 @@ class TimeFieldTest extends DrupalWebTestCase {
     $this->drupalPost(NULL, $edit, t('Save'));
 
 
-    $edit = array('field[settings][totime]' => (string)('required'));
+    $edit = array('field[settings][totime]' => (string) ('required'));
     $this->drupalPost(NULL, array(), t('Save field settings'));
 
     $this->drupalPost(NULL, $edit, t('Save settings'));
@@ -84,11 +91,11 @@ class TimeFieldTest extends DrupalWebTestCase {
     );
     $this->drupalPost(NULL, $edit, t('Save'));
 
-    $edit = array('field[settings][totime]' => (string)('required'));
+    $edit = array('field[settings][totime]' => (string) ('required'));
     $this->drupalPost(NULL, $edit, t('Save field settings'));
 
     $edit = array(
-     'field[cardinality]' => (string)(-1),
+      'field[cardinality]' => (string) (-1),
     );
     $this->drupalPost(NULL, $edit, t('Save settings'));
 

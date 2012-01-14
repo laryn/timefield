@@ -39,7 +39,6 @@ function timefield_taxonomy_handler_info($field_type = NULL) {
 
 /**
  * Helper function to return supported field types for timefield_taxonomy
- * @return array of supported field keyed by field_type name.
  */
 function timefield_taxonomy_supported_field_types() {
   $supported = array();
@@ -75,16 +74,16 @@ function timefield_taxonomy_field_widget_info() {
 function timefield_taxonomy_field_widget_settings_form($this_field, $instance) {
   $settings = $instance['widget']['settings'];
 
-
-  // Get fields on this entity
+  // Get fields on this entity.
   $entity_fields = field_info_instances($instance['entity_type'], $instance['bundle']);
-  // Get fields on selected vocabulary
+  // Get fields on selected vocabulary.
   $current_vocabulary_fields = array();
   foreach ($this_field['settings']['allowed_values'] as $delta => $tree) {
     $current_possible_fields = field_info_instances('taxonomy_term', $tree['vocabulary']);
     foreach ($current_possible_fields as $index => $valid_field) {
-      // we are checking here that this is a valid field for our purposes, i.e., it is a timefield
-      // that has cardinality == 1 and that settings totime or todate is optional // required
+      // We are checking here that this is a valid field for our purposes, i.e.,
+      // it is a timefield that has cardinality == 1 and that settings totime
+      // or todate is optional required.
       $eval_field = field_info_field($valid_field['field_name']);
       if ($eval_field['type'] == 'timefield' && $eval_field['settings']['totime'] <> 'never' && $eval_field['cardinality'] == 1) {
         $current_vocabulary_fields[$index] = $valid_field;
@@ -92,14 +91,14 @@ function timefield_taxonomy_field_widget_settings_form($this_field, $instance) {
     }
   }
 
-  // Get all fields to match against our type
+  // Get all fields to match against our type.
   $all_fields = field_info_fields();
   $supported_field_types = timefield_taxonomy_supported_field_types();
   $field_types = array();
   $valid_fields = array();
   $valid_match_fields = array();
 
-  // Get a list of all valid fields that we both support and are part of this entity
+  // Get a list of valid fields that we both support / are part of this entity.
   foreach ($all_fields as $field) {
     if (array_key_exists($field['field_name'], $entity_fields)) {
       if (in_array($field['type'], array_keys($supported_field_types)) && ($field['field_name'] != $this_field['field_name'])) {
@@ -160,34 +159,35 @@ function timefield_taxonomy_field_widget_form(&$form, &$form_state, $field, $ins
   $element = $base;
 
   $element['tid'] = array(
-   '#type' => 'hidden',
-   '#element_validate' => array('timefield_taxonomy_widget_validate'),
+    '#type' => 'hidden',
+    '#element_validate' => array('timefield_taxonomy_widget_validate'),
   );
   $element['timefield_taxonomy_target'] = array(
-   '#type' => 'hidden',
-   '#value' => $instance['field_name'],
+    '#type' => 'hidden',
+    '#value' => $instance['field_name'],
   );
   $element['timefield_taxonomy_source'] = array(
-   '#type' => 'hidden',
-   '#value' => isset($instance['widget']['settings']['timefield_taxonomy_field']) ? $instance['widget']['settings']['timefield_taxonomy_field'] : '',
+    '#type' => 'hidden',
+    '#value' => isset($instance['widget']['settings']['timefield_taxonomy_field']) ? $instance['widget']['settings']['timefield_taxonomy_field'] : '',
   );
   $element['timefield_taxonomy_vocab_match'] = array(
-   '#type' => 'hidden',
-   '#value' => isset($instance['widget']['settings']['timefield_taxonomy_match_field']) ? $instance['widget']['settings']['timefield_taxonomy_match_field'] : '',
+    '#type' => 'hidden',
+    '#value' => isset($instance['widget']['settings']['timefield_taxonomy_match_field']) ? $instance['widget']['settings']['timefield_taxonomy_match_field'] : '',
   );
   $element['timefield_taxonomy_match_options'] = array(
-   '#type' => 'hidden',
-   '#value' => isset($instance['widget']['settings']['timefield_taxonomy_match_options']) ? $instance['widget']['settings']['timefield_taxonomy_match_options'] : '',
+    '#type' => 'hidden',
+    '#value' => isset($instance['widget']['settings']['timefield_taxonomy_match_options']) ? $instance['widget']['settings']['timefield_taxonomy_match_options'] : '',
   );
   return $element;
 }
 
 /**
- * Implements hook_widget_validate
+ * Implements hook_widget_validate().
  */
 function timefield_taxonomy_widget_validate($element, &$form_state) {
 
-  // Walk the form_state values, applying all instances of timefield_taxonomy source and target operations
+  // Walk the form_state values, applying all instances of timefield_taxonomy
+  // source and target operations.
   foreach ($form_state['values'] as &$field) {
     if (is_array($field)) {
       $lang = isset($form_state['values']['language']) ? $form_state['values']['language'] : LANGUAGE_NONE;
@@ -231,8 +231,10 @@ function timefield_taxonomy_date_field($field, $field_item, $match_field, $optio
     }
   }
   elseif ($field['type'] == 'datetime' || $field['type'] == 'datestamp') {
-    // exit if value is empty
-    if (empty($field_item['value'])) return;
+    // Exit if value is empty.
+    if (empty($field_item['value'])) {
+      return;
+    }
     $start_time = timefield_time_to_integer($field_item['value']) + $field_item['offset'];
     if (isset($field_item['value2'])) {
       $end_time = timefield_time_to_integer($field_item['value2']) + $field_item['offset2'];
@@ -278,7 +280,6 @@ function timefield_taxonomy_query($field, $start_time, $end_time) {
     }
   }
   return $return;
-
 }
 
 /**
@@ -290,7 +291,7 @@ function _timefield_taxonomy_aggregate_tags($tags, $field_cardinality) {
   foreach ($tags as $tag) {
     foreach ($tag as $t) {
       if (!in_array(array('tid' => $t), $agg_tags)) {
-        if ($count < $field_cardinality || $field_cardinality == -1 ) {
+        if ($count < $field_cardinality || $field_cardinality == -1) {
           $agg_tags[] = array('tid' => $t);
         }
         $count += 1;
