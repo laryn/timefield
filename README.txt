@@ -20,7 +20,7 @@ INSTALLATION
 already installed, download, enable, and configure the latest versions of the
 Libraries module.
 
-3) Download jQZoom from 
+3) Download timepicker plugin from 
 http://fgelinas.com/code/timepicker/releases/jquery-ui-timepicker-0.2.9.zip
 and unzip the archive into your site's 'libraries' directory (usually 
 /site/all/libraries), specifically to the /jquery.timepicker directory.  If you
