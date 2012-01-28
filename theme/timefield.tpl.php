@@ -21,6 +21,7 @@
  * $time['days'] - an array of days, keyed by 3 letter signifier
  *
  */
+
 ?>
 <div class="time-default">
 <?php print $time['time'] ?>

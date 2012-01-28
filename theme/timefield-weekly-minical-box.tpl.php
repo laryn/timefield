@@ -5,9 +5,8 @@
  * Template file for timefield minical box
  *
  * variables available:
- *
- *
  */
+
 ?>
 <div class="<?php print $classes; ?>">
   <div class="timefield-minical-label">

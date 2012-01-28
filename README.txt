@@ -19,4 +19,3 @@ I am not really sure about a use-case for this.
 There are a two display formatters, time and duration.  You can configure 
 various output formats in the format settings dialog option on the 
 "Manage Display" section of the Field API UI.
-

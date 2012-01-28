@@ -39,7 +39,7 @@ class TimeFieldTest extends DrupalWebTestCase {
    */
   function testTimeFieldBasic() {
     $content_type_friendly = $this->randomName(20);
-    $content_type_machine = strtolower($this->randomName(10));
+    $content_type_machine = drupal_strtolower($this->randomName(10));
     $title = $this->randomName(20);
 
     // Create and login user.
@@ -52,7 +52,7 @@ class TimeFieldTest extends DrupalWebTestCase {
     $this->clickLink(t('Add content type'));
 
     $single_field_name_friendly = $this->randomName(20);
-    $single_field_name_machine = strtolower($this->randomName(10));
+    $single_field_name_machine = drupal_strtolower($this->randomName(10));
 
     $edit = array(
       'name' => $content_type_friendly,
@@ -81,7 +81,7 @@ class TimeFieldTest extends DrupalWebTestCase {
     // Now we're back on the field-add page.
     // Now add a multivalued field.
     $multivalue_field_name_friendly = $this->randomName(20);
-    $multivalue_field_name_machine = strtolower($this->randomName(10));
+    $multivalue_field_name_machine = drupal_strtolower($this->randomName(10));
     $edit = array(
       'fields[_add_new_field][label]' => $multivalue_field_name_friendly,
       'fields[_add_new_field][field_name]' => $multivalue_field_name_machine,
