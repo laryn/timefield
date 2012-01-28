@@ -30,6 +30,12 @@ function timefield_field_info() {
         'am_text' => 'AM',
         'pm_text' => 'PM',
         'minute_interval' => 5,
+        'showCloseButton' => FALSE,
+        'closeButtonText' => 'Done',
+        'showNowButton' => FALSE,
+        'nowButtonText' => 'Now',
+        'showDeselectButton' => FALSE,
+        'deselectButtonText' => 'Deselect',
       ),
     ),
     'default_widget' => 'timefield_standard',
@@ -131,28 +137,32 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#type' => 'textfield',
     '#default_value' => isset($settings['input_format']['separator']) ? $settings['input_format']['separator'] : ':',
     '#size' => 10,
+    '#description' => t('The character to use to separate hours and minutes.'),
   );
   $form['input_format']['showLeadingZero'] = array(
     '#title' => t('Show Leading Zero for Hour'),
     '#type' => 'checkbox',
     '#default_value' => isset($settings['input_format']['showLeadingZero']) ? $settings['input_format']['showLeadingZero'] : FALSE,
+    '#description' => t('Whether or not to show a leading zero for hours < 10.'),
   );
   $form['input_format']['showMinutesLeadingZero'] = array(
     '#title' => t('Show Leading Zero for Minute'),
     '#type' => 'checkbox',
     '#default_value' => isset($settings['input_format']['showMinutesLeadingZero']) ? $settings['input_format']['showMinutesLeadingZero'] : FALSE,
+    '#description' => t('Whether or not to show a leading zero for minutes < 10'),
   );
   $form['input_format']['showPeriod'] = array(
-    '#title' => t('Show or Hide AM/PM'),
-    '#type' => 'radios',
+    '#title' => t('Hide AM/PM'),
+    '#type' => 'checkbox',
     '#default_value' => isset($settings['input_format']['showPeriod']) ? $settings['input_format']['showPeriod'] : FALSE,
-    '#options' => array(0 => 'Do not show AM/PM', 1 => 'Show AM/PM'),
+    '#description' => t('Whether or not to show AM/PM on the input textfield after selecting the time with the widget.'),
   );
   $form['input_format']['periodSeparator'] = array(
     '#title' => t('What character should appear between the time and the Period (AM/PM)'),
     '#type' => 'textfield',
     '#default_value' => isset($settings['input_format']['periodSeparator']) ? $settings['input_format']['periodSeparator'] : '',
     '#size' => 10,
+    '#description' => t('The character to use to separate the time from the time period (AM/PM).'),
   );
   $form['input_format']['am_text'] = array(
     '#title' => t('AM text'),
@@ -164,6 +174,39 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#title' => t('PM text'),
     '#type' => 'textfield',
     '#default_value' => isset($settings['input_format']['pm_text']) ? $settings['input_format']['pm_text'] : 'PM',
+    '#size' => 10,
+  );
+  $form['input_format']['showCloseButton'] = array(
+    '#title' => t('Show a Button to Close the Picker Widget'),
+    '#type' => 'checkbox',
+    '#default_value' => isset($settings['input_format']['showCloseButton']) ? $settings['input_format']['showCloseButton'] : FALSE,
+  );
+  $form['input_format']['closeButtonText'] = array(
+    '#title' => t('Close Button text'),
+    '#type' => 'textfield',
+    '#default_value' => isset($settings['input_format']['closeButtonText']) ? $settings['input_format']['closeButtonText'] : 'Close',
+    '#size' => 10,
+  );
+  $form['input_format']['showNowButton'] = array(
+    '#title' => t('Show a Button to Select the Current Time'),
+    '#type' => 'checkbox',
+    '#default_value' => isset($settings['input_format']['showNowButton']) ? $settings['input_format']['showNowButton'] : FALSE,
+  );
+  $form['input_format']['nowButtonText'] = array(
+    '#title' => t('Now Button text'),
+    '#type' => 'textfield',
+    '#default_value' => isset($settings['input_format']['nowButtonText']) ? $settings['input_format']['nowButtonText'] : 'Now',
+    '#size' => 10,
+  );
+  $form['input_format']['showDeselectButton'] = array(
+    '#title' => t('Show a Button to Deselect the time in the Picker Widget'),
+    '#type' => 'checkbox',
+    '#default_value' => isset($settings['input_format']['showDeselectButton']) ? $settings['input_format']['showDeselectButton'] : FALSE,
+  );
+  $form['input_format']['deselectButtonText'] = array(
+    '#title' => t('Deselect Button text'),
+    '#type' => 'textfield',
+    '#default_value' => isset($settings['input_format']['deselectButtonText']) ? $settings['input_format']['deselectButtonText'] : 'Deselect',
     '#size' => 10,
   );
 
@@ -253,7 +296,7 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
   $instance_settings = $instance['settings'];
 
   $element = array();
-
+  $instance_class = str_replace('_', '-', $instance['field_name']);
   if ($display['type'] == 'timefield_duration') {
 
     $element['duration_format'] = array(
@@ -271,24 +314,20 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
 
   if ($display['type'] == 'timefield_weekly_summary_minical') {
 
-    static $js_settings = FALSE;
+    $js_settings = _timefield_js_settings($instance_class, $instance_settings['input_format']);
 
-    if (!$js_settings) {
-      $js_settings = _timefield_js_settings($instance_settings['input_format']);
-
-      $element['#attached'] = array(
-        'library' => array(
-          array('timefield', 'timepicker'),
+    $element['#attached'] = array(
+      'library' => array(
+        array('timefield', 'timepicker'),
+      ),
+      'js' =>  array(
+        drupal_get_path('module', 'timefield') . '/js/timefield.js',
+        array(
+          'data' => array('timefield' => $js_settings),
+          'type' => 'setting',
         ),
-        'js' =>  array(
-          drupal_get_path('module', 'timefield') . '/js/timefield.js',
-          array(
-            'data' => array('timefield' => $js_settings),
-            'type' => 'setting',
-          ),
-        ),
-      );
-    }
+      ),
+    );
 
     $element += _timefield_display_format_form('column_format', "Column Time Settings", $settings);
 
@@ -306,7 +345,7 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       '#default_value' => $settings['absolute_start'],
       '#size' => 15,
       '#maxlength' => 15,
-      '#attributes' => array('class' => array('edit-timefield-timepicker')),
+      '#attributes' => array('class' => array('edit-timefield-timepicker', $instance_class)),
     );
     $element['absolute_end'] = array(
       '#title' => t('Mini Cal End Time'),
@@ -315,7 +354,7 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       '#default_value' => $settings['absolute_end'],
       '#size' => 15,
       '#maxlength' => 15,
-      '#attributes' => array('class' => array('edit-timefield-timepicker')),
+      '#attributes' => array('class' => array('edit-timefield-timepicker', $instance_class)),
     );
     $element['range'] = array(
       '#type' => 'select',
@@ -418,8 +457,7 @@ function timefield_field_formatter_settings_summary($field, $instance, $view_mod
       return t('This display format is invalid for the current field configuration');
     }
     else {
-      // @TODO: Blah is not very descriptive.
-      return t('Current Format') . ': Blah blah blah' ;
+      return t('Current Format: Mini Calendar Format, expand to see current Selection');
     }
   }
 }
@@ -573,10 +611,13 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
     '#delta' => $delta,
   );
 
+  $instance_class = str_replace('_', '-', $element['#field_name']);
+
+
   $value = isset($items[$delta]['value']) ? $items[$delta]['value'] : '';
 
   if ($settings['weekly_summary']) {
-    $days = isset($items[$delta]) ? _timefield_weekly_summary_days_map($items[$delta]) : array();
+    $days = isset($items[$delta]['mon']) ? _timefield_weekly_summary_days_map($items[$delta]) : array();
   }
 
   if ($settings['totime'] == 'required' || $settings['totime'] == 'optional') {
@@ -585,9 +626,6 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
 
   switch ($instance['widget']['type']) {
     case 'timefield_standard':
-
-      // We don't want to add our settings more than once.
-      static $js_settings = FALSE;
 
       $element += array(
         '#title' => 'Time',
@@ -602,13 +640,11 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         ),
       );
 
-      if (!$js_settings) {
-        $js_settings = _timefield_js_settings($instance_settings['input_format']);
-        $element['#attached']['js'][] = array(
-          'data' => array('timefield' => $js_settings),
-          'type' => 'setting',
-        );
-      }
+      $js_settings = _timefield_js_settings($instance_class, $instance_settings['input_format']);
+      $element['#attached']['js'][] = array(
+        'data' => array('timefield' => $js_settings),
+        'type' => 'setting',
+      );
 
       if ($settings['weekly_summary']) {
         $element['label'] = array(
@@ -628,7 +664,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         '#default_value' => timefield_integer_to_time($display_settings['display_format'], $value),
         '#size' => 15,
         '#maxlength' => 15,
-        '#attributes' => array('class' => array('edit-timefield-timepicker')),
+        '#attributes' => array('class' => array('edit-timefield-timepicker', $instance_class)),
       );
 
       // Add second element if totime is required or optional.
@@ -769,7 +805,7 @@ function timefield_integer_to_time($settings, $value) {
     if ($value >= 86400) {
       $value = $value - 86400;
     }
-     return date($format, mktime(0, 0, $value));
+    return date($format, mktime(0, 0, $value));
   }
   else {
     return '';
@@ -883,15 +919,24 @@ function _timefield_duration_options($current_option = NULL) {
  * library.
  *
  */
-function _timefield_js_settings($settings) {
+function _timefield_js_settings($class, $settings) {
 
   $js_settings = array(
-    'showLeadingZero' => $settings['showLeadingZero'],
-    'timeSeparator' => $settings['separator'],
-    'showPeriod' => $settings['showPeriod'],
-    'showPeriodLabels' => $settings['showPeriod'],
-    'periodSeparator' => $settings['periodSeparator'],
-    'amPmText' => array($settings['am_text'], $settings['pm_text']),
+    $class => array(
+      'showLeadingZero' => $settings['showLeadingZero'],
+      'timeSeparator' => $settings['separator'],
+      'showPeriod' => $settings['showPeriod'],
+      'showPeriodLabels' => $settings['showPeriod'],
+      'periodSeparator' => $settings['periodSeparator'],
+      'amPmText' => array($settings['am_text'], $settings['pm_text']),
+      'showMinutesLeadingZero' => $settings['showMinutesLeadingZero'],
+      'showCloseButton' => $settings['showCloseButton'],
+      'closeButtonText' => $settings['closeButtonText'],
+      'showNowButton' =>  $settings['showNowButton'],
+      'nowButtonText' => $settings['nowButtonText'],
+      'showDeselectButton' => $settings['showDeselectButton'],
+      'deselectButtonText' => $settings['deselectButtonText'],
+    ),
   );
 
   return $js_settings;
