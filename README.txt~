@@ -23,8 +23,8 @@ Libraries module.
 3) Download jQZoom from 
 http://fgelinas.com/code/timepicker/releases/jquery-ui-timepicker-0.2.9.zip
 and unzip the archive into your site's 'libraries' directory (usually 
-/site/all/libraries), specifically to the /jquery.timepicker directory.  If you
-have drush installed, you can use the command "drush dl timefield-plugin" to 
+/site/all/libraries), specifically to the /timepicker directory.  If you have 
+drush installed, you can use the command "drush dl timefield-plugin" to 
 automatically download and install this library.
 
 USAGE
