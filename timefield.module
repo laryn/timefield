@@ -152,10 +152,10 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#description' => t('Whether or not to show a leading zero for minutes < 10'),
   );
   $form['input_format']['showPeriod'] = array(
-    '#title' => t('Hide AM/PM'),
+    '#title' => t('Show AM/PM Label'),
     '#type' => 'checkbox',
     '#default_value' => isset($settings['input_format']['showPeriod']) ? $settings['input_format']['showPeriod'] : FALSE,
-    '#description' => t('Whether or not to show AM/PM on the input textfield after selecting the time with the widget.'),
+    '#description' => t('Whether or not to show AM/PM on the input textfield both on the widget and in the text field after selecting the time with the widget.'),
   );
   $form['input_format']['periodSeparator'] = array(
     '#title' => t('What character should appear between the time and the Period (AM/PM)'),
