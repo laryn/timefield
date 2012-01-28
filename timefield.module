@@ -614,14 +614,14 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
   $instance_class = str_replace('_', '-', $element['#field_name']);
 
 
-  $value = isset($items[$delta]['value']) ? $items[$delta]['value'] : '';
+  $value = isset($items[$delta]['value']) ? timefield_integer_to_time($display_settings['display_format'], $items[$delta]['value']) : '';
 
   if ($settings['weekly_summary']) {
     $days = isset($items[$delta]['mon']) ? _timefield_weekly_summary_days_map($items[$delta]) : array();
   }
 
   if ($settings['totime'] == 'required' || $settings['totime'] == 'optional') {
-    $value2 = isset($items[$delta]['value2']) ? $items[$delta]['value2'] : '';
+    $value2 = isset($items[$delta]['value2']) ? timefield_integer_to_time($display_settings['display_format'], $items[$delta]['value2']) : '';
   }
 
   switch ($instance['widget']['type']) {
@@ -661,7 +661,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         '#title' => t('Time'),
         '#description' => t('Enter a time value, in any format'),
         '#type' => 'textfield',
-        '#default_value' => timefield_integer_to_time($display_settings['display_format'], $value),
+        '#default_value' => _timefield_map_input_format_to_display_format($value, $instance_settings['input_format']),
         '#size' => 15,
         '#maxlength' => 15,
         '#attributes' => array('class' => array('edit-timefield-timepicker', $instance_class)),
@@ -673,7 +673,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
           '#title' => t('End Time'),
           '#description' => t('Enter a time value, in any format'),
           '#type' => 'textfield',
-          '#default_value' => timefield_integer_to_time($display_settings['display_format'], $value2),
+          '#default_value' => _timefield_map_input_format_to_display_format($value2, $instance_settings['input_format']),
           '#size' => 15,
           '#maxlength' => 15,
           '#attributes' => array('class' => array('edit-timefield-timepicker')),
@@ -940,6 +940,44 @@ function _timefield_js_settings($class, $settings) {
   );
 
   return $js_settings;
+}
+
+/**
+ * Helper function to map format settings for jQuery timepicker widget to PHP
+ * format settings, so that input formats are consistent.
+ *
+ */
+function _timefield_map_input_format_to_display_format($date, $display_format) {
+
+  $date_value = date_parse($date);
+
+  if (count($date_value['errors'])) {
+    return '';
+  }
+
+  if ($display_format['showPeriod']) {
+    $format = $date_value['hour'] > 12 ? $date_value['hour'] - 12 : $date_value['hour'];
+  }
+  else {
+    $format = $date_value['hour'];
+  }
+
+  $format .= $display_format['separator'];
+
+  if ($display_format['showMinutesLeadingZero']) {
+    $format .= $date_value['minute'];
+  }
+  else {
+    $format .= ltrim('0', (string) $date_value['minute']);
+  }
+
+  $format .= $display_format['periodSeparator'];
+
+  if ($display_format['showPeriod']) {
+    $format .= $date_value['hour'] > 12 ? $display_format['pm_text'] : $display_format['am_text'];
+  }
+
+  return $format;
 }
 
 /**
