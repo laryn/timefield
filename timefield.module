@@ -438,10 +438,11 @@ function _timefield_display_format_form($name, $fieldset_header, $settings) {
     '#options' => _timefield_time_part_format('period'),
   );
   $element[$name]['period_separator'] = array(
-    '#title' => t('What character should appear between the time and the Period (AM/PM)'),
+    '#title' => t('Minute and period separtor'),
     '#type' => 'textfield',
     '#default_value' => isset($settings[$name]['period_separator']) ? $settings[$name]['period_separator'] : '',
     '#size' => 10,
+    '#description' => t('The character used to separate the time from the time period (AM/PM)'),
   );
 
   return $element;
