@@ -36,6 +36,8 @@ function timefield_field_info() {
         'nowButtonText' => 'Now',
         'showDeselectButton' => FALSE,
         'deselectButtonText' => 'Deselect',
+        'myPosition' => 'left top',
+        'atPosition' => 'left bottom',
       ),
     ),
     'default_widget' => 'timefield_standard',
@@ -207,6 +209,21 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#title' => t('Deselect Button text'),
     '#type' => 'textfield',
     '#default_value' => isset($settings['input_format']['deselectButtonText']) ? $settings['input_format']['deselectButtonText'] : 'Deselect',
+    '#size' => 10,
+  );
+  $form['input_format']['myPosition'] = array(
+    '#title' => t('my Position'),
+    '#type' => 'select',
+    '#default_value' => isset($settings['input_format']['myPosition']) ? $settings['input_format']['myPosition'] : 'left top',
+    '#options' => drupal_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
+    '#description' => t('Corner of the timpicker widget dialog to position'),
+  );
+  $form['input_format']['atPosition'] = array(
+    '#title' => t('at Position'),
+    '#type' => 'select',
+    '#options' => drupal_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
+    '#default_value' => isset($settings['input_format']['atPosition']) ? $settings['input_format']['atPosition'] : 'left bottom',
+    '#description' => t('Where to position "my Position" relative to input widget textfield'),
     '#size' => 10,
   );
 
@@ -936,6 +953,8 @@ function _timefield_js_settings($class, $settings) {
       'nowButtonText' => $settings['nowButtonText'],
       'showDeselectButton' => $settings['showDeselectButton'],
       'deselectButtonText' => $settings['deselectButtonText'],
+      'myPosition' => $settings['myPosition'],
+      'atPosition' => $settings['atPosition'],
     ),
   );
 
