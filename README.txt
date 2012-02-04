@@ -13,19 +13,32 @@ Gregorian calendar.
 INSTALLATION
 ------------
 
-1) Start by copying the module files into your 'modules' directory 
-(usually /sites/all/modules)
+1) Start by copying the module files into your 'modules' directory.  For more
+information: http://drupal.org/documentation/install/modules-themes/modules-7
 
-2) The Timefield module works in conjunction with the Libraries module. If not
-already installed, download, enable, and configure the latest versions of the
-Libraries module.
+2) The Timefield module utilizes a jQuery plugin to assist with the input of
+time values.  The use of this plugin is facilitated by the Libraries module. If 
+not already installed, download, enable, and configure the latest versions of 
+the Libraries module. See:
+http://drupal.org/project/libraries
 
-3) Download timepicker plugin from 
-http://fgelinas.com/code/timepicker/releases/jquery-ui-timepicker-0.2.9.zip
-and unzip the archive into your site's 'libraries' directory (usually 
-/site/all/libraries), specifically to the /jquery.timepicker directory.  If you
-have drush installed, you can use the command "drush dl timefield-plugin" to 
-automatically download and install this library.
+3) Acquire the timepicker plugin.  There are a few ways to do this.
+a) Direct Download:
+You can either download a zip or tarball file from github:
+https://github.com/fgelinas/timepicker/downloads
+Or you can download the plugin from the author's site:
+http://fgelinas.com/code/timepicker
+Once you have the compressed file, unzip it to the libraries folder to a
+subfolder called "jquery.timepicker".
+The main javascript file should have a path like this:
+/sites/all/libraries/jquery.timepicker/jquery.ui.timepicker.js
+
+b) You can also clone the repository directly:
+From your libraries subfolder, execute this command:
+git clone https://github.com/fgelinas/timepicker.git jquery.timepicker
+
+c) If you have drush installed, you can use the command 
+"drush dl timefield-plugin" to automatically download and install this library.
 
 USAGE
 -------
@@ -35,4 +48,5 @@ depending on your preference.  While this field is multi-value capable,
 I am not really sure about a use-case for this.  
 There are a three display formatters, time (with optional to time, duration,
 and a mini-calendar output.  You can configure various output formats in the 
-format settings dialog option on the "Manage Display" section of the Field API UI.
+format settings dialog option on the "Manage Display" section of the Field API 
+UI.
