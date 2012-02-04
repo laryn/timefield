@@ -224,7 +224,6 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#options' => drupal_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
     '#default_value' => isset($settings['input_format']['atPosition']) ? $settings['input_format']['atPosition'] : 'left bottom',
     '#description' => t('Where to position "my Position" relative to input widget textfield'),
-    '#size' => 10,
   );
 
   return $form;
