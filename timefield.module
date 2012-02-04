@@ -983,15 +983,14 @@ function _timefield_map_input_format_to_display_format($date, $display_format) {
   $format .= $display_format['separator'];
 
   if ($display_format['showMinutesLeadingZero']) {
-    $format .= $date_value['minute'];
+    $format .= str_pad((string) $date_value['minute'], 2, "0", STR_PAD_LEFT);
   }
   else {
-    $format .= ltrim('0', (string) $date_value['minute']);
+    $format .= (string) $date_value['minute'];
   }
 
-  $format .= $display_format['periodSeparator'];
-
   if ($display_format['showPeriod']) {
+    $format .= $display_format['periodSeparator'];
     $format .= $date_value['hour'] > 12 ? $display_format['pm_text'] : $display_format['am_text'];
   }
 
