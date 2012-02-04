@@ -692,7 +692,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
           '#default_value' => _timefield_map_input_format_to_display_format($value2, $instance_settings['input_format']),
           '#size' => 15,
           '#maxlength' => 15,
-          '#attributes' => array('class' => array('edit-timefield-timepicker')),
+          '#attributes' => array('class' => array('edit-timefield-timepicker', $instance_class)),
         );
       }
 
