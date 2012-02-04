@@ -811,9 +811,13 @@ function timefield_build_time_format($settings) {
  * Helper function to return time value from integer
  *
  * @param array $settings
- *   format settings
+ *   Field formatter settings.
+ *   @see timefield_field_formatter_settings_form().
  * @param integer $value
- *   the integer value to be converted
+ *   Integer offset from midnight to be converted to human-readable time.
+ *
+ * @return string
+ *   Human-readable time string
  */
 function timefield_integer_to_time($settings, $value) {
   $format = timefield_build_time_format($settings);
@@ -829,10 +833,11 @@ function timefield_integer_to_time($settings, $value) {
 }
 
 /**
- * Helper function to return interer value from time format
+ * Helper function to return integer value offset from midnight from time
+ * format.
  *
  * @param string $value
- *   time format that should be parsable via date_parse().
+ *   Time format that should be parsable via date_parse().
  */
 function timefield_time_to_integer($value) {
   $time = date_parse($value);
@@ -849,7 +854,7 @@ function timefield_time_to_integer($value) {
 }
 
 /**
- * Helper function to return duration value from 2 values, in specified format
+ * Helper function to return duration value from 2 values, in specified format.
  *
  * @param integer $value
  *   First time value
@@ -857,6 +862,9 @@ function timefield_time_to_integer($value) {
  *   Second time value *
  * @param string $format
  *   PHP time format
+ *
+ *  @return mixed
+ *    Integer or string depending on $format passed
  */
 function timefield_time_to_duration($value, $value2, $format) {
 
