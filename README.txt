@@ -38,7 +38,7 @@ From your libraries subfolder, execute this command:
 git clone https://github.com/fgelinas/timepicker.git jquery.timepicker
 
 c) If you have drush installed, you can use the command 
-"drush dl timefield-plugin" to automatically download and install this library.
+"drush timefield-plugin" to automatically download and install this library.
 
 USAGE
 -------
