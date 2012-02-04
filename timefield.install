@@ -12,6 +12,9 @@ function timefield_field_schema($field) {
 
   $db_columns = array();
 
+  // We are using an integer to store time values.  This in not a UNIX timestamp
+  // however, rather offset from 12:00 AM midnight.  Values that are greater
+  // than 24 * 60 * 60, or the value of 24-hour period are condidered +1 day.
   $db_columns['value'] = array(
     'type' => 'int',
     'not null' => FALSE,
@@ -38,42 +41,49 @@ function timefield_field_schema($field) {
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'tue' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'wed' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'thu' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'fri' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'sat' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'sun' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
     );
   }
