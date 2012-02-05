@@ -4,4 +4,5 @@ core = 7.x
 package = Fields
 dependencies[] = libraries
 files[] = views/timefield_plugin_style_minical.inc
+files[] = views/timefield_hander_field_timefield_duration.inc
 files[] = timefield.test
