@@ -721,7 +721,6 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
   return $element;
 }
 
-
 /**
  * Implements hook_field_load().
  *
@@ -805,7 +804,8 @@ function template_preprocess_timefield_weekly_summary_minical_box(&$variables) {
 }
 
 /**
- * Helper function to build time format.
+ * Helper function to build time format settings appropriate for use with PHP
+ * date function.
  */
 function timefield_build_time_format($settings) {
 
@@ -817,20 +817,36 @@ function timefield_build_time_format($settings) {
 }
 
 /**
- * Helper function to return time value from integer
+ * Helper function to return time value from a timefield integer.
  *
  * @param array $settings
- *   Field formatter settings.
- *   @see timefield_field_formatter_settings_form().
+ *   Field formatter settings.  This is a structured array used to format a date
+ *   with PHP's date() function.  This array has the following keys:
+ *     -separator
+ *       The character the goes between the hour and minute value
+ *     -period_separator
+ *       The character the goes between the time string and the period (AM/PM)
+ *     -period
+ *       The PHP formatting option for period, or "none" to omit display
+ *     -hour
+ *       The PHP formatting option for hour
+ *     -minute
+ *       The PHP formatting option for minute
+ *    @see _timefield_time_part_format() for some possible options.  It is worth
+ *    noting that no assumptions are made about how one wishes to format date
+ *    output, e.g., 24-hour formatted times are not assumed to not have AM/PM
+ *    period information.
  * @param integer $value
- *   Integer offset from midnight to be converted to human-readable time.
+ *   Integer offset from midnight to be converted to human-readable time.  This
+ *   value is basically number of seconds from midnight.  If you wish to
+ *   to show
  *
  * @return string
  *   Human-readable time string
  */
 function timefield_integer_to_time($settings, $value) {
   $format = timefield_build_time_format($settings);
-  if (!strlen($value) == 0) {
+  if (!empty($value)) {
     if ($value >= 86400) {
       $value = $value - 86400;
     }
@@ -854,7 +870,7 @@ function timefield_time_to_integer($value) {
   if ($time['error_count'] == 0) {
     $output += $time['hour'] * 60 * 60;
     $output += $time['minute'] * 60;
-    $output += $time['second'] ;
+    $output += $time['second'];
     return $output;
   }
   else {
