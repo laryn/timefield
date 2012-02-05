@@ -272,6 +272,13 @@ function timefield_field_formatter_info() {
       'field types' => array('timefield'),
       'settings' => array(
         'duration_format' => 'minutes',
+        'display_format' => array(
+          'separator' => ':',
+          'period_separator' => '',
+          'period' => 'a',
+          'hour' => 'g',
+          'minute' => 'i',
+        ),
       ),
     ),
     'timefield_weekly_summary_minical' => array(
@@ -322,6 +329,9 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       '#default_value' => $settings['duration_format'],
       '#required' => TRUE,
     );
+
+     $element += _timefield_display_format_form('display_format', "Time Input Settings", $settings);
+
   }
 
   if ($display['type'] == 'timefield_default') {
@@ -465,8 +475,7 @@ function timefield_field_formatter_settings_summary($field, $instance, $view_mod
       return t('This display format is invalid for the current field configuration');
     }
     else {
-      // @TODO:
-      return t('Current Format') . ': ';
+      return t('Current Format') . ': ' . _timefield_duration_options($settings['duration_format']);
     }
   }
   elseif (($display['type']) == 'timefield_weekly_summary_minical') {
@@ -630,7 +639,6 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
 
   $instance_class = str_replace('_', '-', $element['#field_name']);
 
-
   $value = isset($items[$delta]['value']) ? timefield_integer_to_time($display_settings['display_format'], $items[$delta]['value']) : '';
 
   if ($settings['weekly_summary']) {
@@ -772,7 +780,7 @@ function template_preprocess_timefield_formatter(&$variables) {
       $variables['time']['value2'] = check_plain($variables['time']['value2']);
       $variables['time']['formatted_value2'] = trim(timefield_integer_to_time('g:i a', $variables['time']['value2']));
       $variables['time']['duration'] = timefield_time_to_duration($variables['time']['value'], $variables['time']['value2'], $variables['settings']['duration_format']);
-      $variables['time']['time'] = timefield_time_to_duration($variables['time']['value'], $variables['time']['value2'], $variables['settings']['duration_format']) . ' ' . $variables['settings']['duration_format'];
+      $variables['time']['time'] = timefield_time_to_duration($variables['time']['value'], $variables['time']['value2'], $variables['settings']['duration_format']);
     }
     else {
       $variables['time']['time'] = 0;
@@ -885,9 +893,7 @@ function timefield_time_to_duration($value, $value2, $format) {
       return $duration;
       break;
     case 'time':
-      // @TODO: fix me
-      // return timefield_integer_to_time('g:i', $duration);
-      return '';
+      return date('g:i', mktime(NULL, NULL, $duration));
       break;
   }
 
@@ -925,10 +931,10 @@ function _timefield_time_part_format($part) {
 function _timefield_duration_options($current_option = NULL) {
 
   $values = array(
-    'hours' => t('Duration in decimal hours'),
+    'hours' => t('Duration in decimal hours, e.g. 1.5'),
     'seconds' => t('Duration in seconds'),
     'minutes' => t('Duration in minutes'),
-    'time' => t('Duration in time format hours'),
+    'time' => t('Duration in time format hours, e.g. 1:30'),
   );
 
   if (is_null($current_option)) {
