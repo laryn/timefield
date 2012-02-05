@@ -774,10 +774,10 @@ function template_preprocess_timefield_formatter(&$variables) {
   elseif ($variables['format'] == 'duration') {
     // Encode the time elements.
     $variables['time']['value'] = check_plain($variables['time']['value']);
-    $variables['time']['formatted_value'] = trim(timefield_integer_to_time('g:i a', $variables['time']['value']));
+    $variables['time']['formatted_value'] = trim(timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value']));
     if (isset($variables['time']['value2'])) {
       $variables['time']['value2'] = check_plain($variables['time']['value2']);
-      $variables['time']['formatted_value2'] = trim(timefield_integer_to_time('g:i a', $variables['time']['value2']));
+      $variables['time']['formatted_value2'] = trim(timefield_integer_to_time($variables['settings']['display_format'], $variables['time']['value2']));
       $variables['time']['duration'] = timefield_time_to_duration($variables['time']['value'], $variables['time']['value2'], $variables['settings']['duration_format']);
       $variables['time']['time'] = timefield_time_to_duration($variables['time']['value'], $variables['time']['value2'], $variables['settings']['duration_format']);
     }
@@ -823,9 +823,10 @@ function timefield_build_time_format($settings) {
  *   Field formatter settings.  This is a structured array used to format a date
  *   with PHP's date() function.  This array has the following keys:
  *     -separator
- *       The character the goes between the hour and minute value
+ *       The character(s) the go(es) between the hour and minute value
  *     -period_separator
- *       The character the goes between the time string and the period (AM/PM)
+ *       The character(s) the go(es) between the time string and the period
+ *       (AM/PM)
  *     -period
  *       The PHP formatting option for period, or "none" to omit display
  *     -hour
@@ -839,7 +840,7 @@ function timefield_build_time_format($settings) {
  * @param integer $value
  *   Integer offset from midnight to be converted to human-readable time.  This
  *   value is basically number of seconds from midnight.  If you wish to
- *   to show
+ *   to show a time +1 day, your value can be greater than 86400.
  *
  * @return string
  *   Human-readable time string
@@ -886,7 +887,11 @@ function timefield_time_to_integer($value) {
  * @param integer $value2
  *   Second time value *
  * @param string $format
- *   PHP time format
+ *   Out format options. Possible options are:
+ *     -hours
+ *     -minutes
+ *     -seconds
+ *     -time
  *
  *  @return mixed
  *    Integer or string depending on $format passed
@@ -1022,7 +1027,7 @@ function _timefield_map_input_format_to_display_format($date, $display_format) {
 
   if ($display_format['showPeriod']) {
     $format .= $display_format['periodSeparator'];
-    $format .= $date_value['hour'] > 12 ? $display_format['pm_text'] : $display_format['am_text'];
+    $format .= $date_value['hour'] >= 12 ? $display_format['pm_text'] : $display_format['am_text'];
   }
 
   return $format;
