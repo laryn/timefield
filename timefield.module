@@ -904,6 +904,40 @@ function timefield_integer_to_time($settings, $value) {
 }
 
 /**
+ * Helper function to return duration value from a timefield integer value, in
+ * specified format.
+ *
+ * @param integer $value
+ *   Time value in seconds
+ * @param string $format
+ *   Out format options. Possible options are:
+ *     -hours
+ *     -minutes
+ *     -seconds
+ *     -time
+ *
+ *  @return string
+ *    Integer cast to string or string depending on $format passed.
+ */
+function timefield_integer_to_duration($value, $format) {
+
+  switch ($format) {
+    case 'hours':
+      return (string) round(($value / 60 / 60), 2);
+      break;
+    case 'minutes':
+      return (string) round(($value / 60), 2);
+      break;
+    case 'seconds':
+      return (string) $value;
+      break;
+    case 'time':
+      return date('g:i', mktime(NULL, NULL, $value));
+      break;
+  }
+}
+
+/**
  * Helper function to return integer value offset from midnight from time
  * format.
  *
@@ -930,7 +964,7 @@ function timefield_time_to_integer($value) {
  * @param integer $value
  *   First time value
  * @param integer $value2
- *   Second time value *
+ *   Second time value
  * @param string $format
  *   Out format options. Possible options are:
  *     -hours
