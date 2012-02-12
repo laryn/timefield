@@ -16,9 +16,10 @@ function timefield_field_info() {
     'description' => t('A field type for storing times, with an optional end time and weekday repeat schedule.'),
     'settings' => array(
       'totime' => '',
-      'weekly_summary' => 0,
+      'weekly_summary' => FALSE,
     ),
     'instance_settings' => array(
+      'disable_plugin' => FALSE,
       'input_format' => array(
         'separator' => ':',
         'showLeadingZero' => FALSE,
@@ -109,7 +110,7 @@ function timefield_field_settings_form($field, $instance, $has_data) {
     '#type' => 'select',
     '#title' => t('To Time'),
     '#options' => array('' => t('Never'), 'optional' => t('Optional'), 'required' => t('Required')),
-    '#description' => t('Should this field include an end time.'),
+    '#description' => t('Whether this field should include an end time.'),
     '#default_value' => $settings['totime'],
     '#disabled' => $has_data,
   );
@@ -129,6 +130,13 @@ function timefield_field_settings_form($field, $instance, $has_data) {
  */
 function timefield_field_instance_settings_form($field, $instance) {
   $settings = $instance['settings'];
+
+  $form['disable_plugin'] = array(
+    '#title' => t('Disable jQuery Timepicker plugin.'),
+    '#type' => 'checkbox',
+    '#default_value' => isset($settings['disable_plugin']) ? $settings['disable_plugin'] : FALSE,
+    '#description' => t('Do not use jQuery Timepicker plugin for input.'),
+  );
 
   $form['input_format'] = array(
     '#title' => t('Time Input Format'),
@@ -182,48 +190,88 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#title' => t('Show a Button to Close the Picker Widget'),
     '#type' => 'checkbox',
     '#default_value' => isset($settings['input_format']['showCloseButton']) ? $settings['input_format']['showCloseButton'] : FALSE,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][disable_plugin]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['input_format']['closeButtonText'] = array(
     '#title' => t('Close Button text'),
     '#type' => 'textfield',
     '#default_value' => isset($settings['input_format']['closeButtonText']) ? $settings['input_format']['closeButtonText'] : 'Close',
     '#size' => 10,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][disable_plugin]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['input_format']['showNowButton'] = array(
     '#title' => t('Show a Button to Select the Current Time'),
     '#type' => 'checkbox',
     '#default_value' => isset($settings['input_format']['showNowButton']) ? $settings['input_format']['showNowButton'] : FALSE,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][disable_plugin]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['input_format']['nowButtonText'] = array(
     '#title' => t('Now Button text'),
     '#type' => 'textfield',
     '#default_value' => isset($settings['input_format']['nowButtonText']) ? $settings['input_format']['nowButtonText'] : 'Now',
     '#size' => 10,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][disable_plugin]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['input_format']['showDeselectButton'] = array(
     '#title' => t('Show a Button to Deselect the time in the Picker Widget'),
     '#type' => 'checkbox',
     '#default_value' => isset($settings['input_format']['showDeselectButton']) ? $settings['input_format']['showDeselectButton'] : FALSE,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][disable_plugin]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['input_format']['deselectButtonText'] = array(
     '#title' => t('Deselect Button text'),
     '#type' => 'textfield',
     '#default_value' => isset($settings['input_format']['deselectButtonText']) ? $settings['input_format']['deselectButtonText'] : 'Deselect',
     '#size' => 10,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][disable_plugin]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['input_format']['myPosition'] = array(
     '#title' => t('my Position'),
     '#type' => 'select',
     '#default_value' => isset($settings['input_format']['myPosition']) ? $settings['input_format']['myPosition'] : 'left top',
     '#options' => drupal_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
-    '#description' => t('Corner of the timpicker widget dialog to position'),
+    '#description' => t('Corner of the timpicker widget dialog to position. See !jquery_info for more info.', array('!jquery_info' => l(t("jQuery UI Position documentation"), 'http://jqueryui.com/demos/position', array('absolute' => TRUE)))),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][disable_plugin]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['input_format']['atPosition'] = array(
     '#title' => t('at Position'),
     '#type' => 'select',
     '#options' => drupal_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
     '#default_value' => isset($settings['input_format']['atPosition']) ? $settings['input_format']['atPosition'] : 'left bottom',
-    '#description' => t('Where to position "my Position" relative to input widget textfield'),
+    '#description' => t('Where to position "my Position" relative to input widget textfield See !jquery_info for more info.', array('!jquery_info' => l(t("jQuery UI Position documentation"), 'http://jqueryui.com/demos/position', array('absolute' => TRUE)))),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][disable_plugin]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
 
   return $form;
@@ -657,19 +705,22 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         '#type' => 'fieldset',
         '#delta' => $delta,
         '#element_validate' => array('timefield_time_validate'),
-        '#attached' => array(
+      );
+
+      if (!$instance_settings['disable_plugin']) {
+        $js_settings = _timefield_js_settings($instance_class, $instance_settings['input_format']);
+
+        $element['#attached'] = array(
           'library' => array(array('timefield', 'timepicker')),
           'js' =>  array(
             drupal_get_path('module', 'timefield') . '/js/timefield.js',
+            array(
+              'data' => array('timefield' => $js_settings),
+              'type' => 'setting',
+            )
           ),
-        ),
-      );
-
-      $js_settings = _timefield_js_settings($instance_class, $instance_settings['input_format']);
-      $element['#attached']['js'][] = array(
-        'data' => array('timefield' => $js_settings),
-        'type' => 'setting',
-      );
+        );
+      }
 
       if ($settings['weekly_summary']) {
         $element['label'] = array(
