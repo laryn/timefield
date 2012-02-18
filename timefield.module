@@ -1136,7 +1136,6 @@ function _timefield_weekly_summary_days() {
     'sun' => t('Sunday'),
   );
 
-
   return $days;
 }
 
