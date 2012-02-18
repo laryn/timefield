@@ -23,7 +23,7 @@ function timefield_field_info() {
       'input_format' => array(
         'separator' => ':',
         'showLeadingZero' => FALSE,
-        'showMinutesLeadingZero' => FALSE,
+        'showMinutesLeadingZero' => TRUE,
         'showPeriod' => TRUE,
         'periodSeparator' => '',
         'showHours' => TRUE,
@@ -154,12 +154,6 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#type' => 'checkbox',
     '#default_value' => isset($settings['input_format']['showLeadingZero']) ? $settings['input_format']['showLeadingZero'] : FALSE,
     '#description' => t('Whether or not to show a leading zero for hours < 10.'),
-  );
-  $form['input_format']['showMinutesLeadingZero'] = array(
-    '#title' => t('Show Leading Zero for Minute'),
-    '#type' => 'checkbox',
-    '#default_value' => isset($settings['input_format']['showMinutesLeadingZero']) ? $settings['input_format']['showMinutesLeadingZero'] : FALSE,
-    '#description' => t('Whether or not to show a leading zero for minutes < 10'),
   );
   $form['input_format']['showPeriod'] = array(
     '#title' => t('Show AM/PM Label'),
@@ -1032,7 +1026,7 @@ function _timefield_js_settings($class, $settings) {
       'showPeriodLabels' => $settings['showPeriod'],
       'periodSeparator' => $settings['periodSeparator'],
       'amPmText' => array($settings['am_text'], $settings['pm_text']),
-      'showMinutesLeadingZero' => $settings['showMinutesLeadingZero'],
+      'showMinutesLeadingZero' => TRUE,
       'showCloseButton' => $settings['showCloseButton'],
       'closeButtonText' => $settings['closeButtonText'],
       'showNowButton' =>  $settings['showNowButton'],
