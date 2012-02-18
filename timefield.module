@@ -596,7 +596,7 @@ function timefield_time_validate($element, &$form_state, $form) {
 function timefield_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   foreach ($items as $delta => $item) {
     if (!empty($item['value'])) {
-      if (!is_int($item['value'])) {
+      if (!is_numeric($item['value'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'timefield_invalid',
           'message' => t('Time values are incorrect.'),
@@ -604,7 +604,7 @@ function timefield_field_validate($entity_type, $entity, $field, $instance, $lan
       }
     }
     if (!empty($item['value2'])) {
-      if (!is_int($item['value2'])) {
+      if (!is_numeric($item['value2'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'timefield_invalid',
           'message' => t('Time values are incorrect.'),
