@@ -47,6 +47,9 @@ function timefield_field_views_data_views_data_alter(&$data, $field) {
   $data_key = 'field_data_' . $field_name;
   $additional_fields = $data[$data_key][$field_name . '_value']['argument']['additional fields'];
 
+  // Add special handler to base field
+  $data[$data_key][$field_name]['field']['handler'] = 'TimefieldHanlderFieldTimefield';
+
   // If the timefield has a value2 column, add duration option.
   if (isset($data[$data_key][$field_name . '_value2'])) {
     $data[$data_key]['timefield_duration'] = array(
@@ -87,4 +90,7 @@ function timefield_field_views_data_views_data_alter(&$data, $field) {
       unset($data[$data_key][$field_name . '_' . $day]['sort']);
     }
   }
+
+  dpm($data);
+
 }
