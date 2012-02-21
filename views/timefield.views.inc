@@ -91,6 +91,4 @@ function timefield_field_views_data_views_data_alter(&$data, $field) {
     }
   }
 
-  dpm($data);
-
 }
