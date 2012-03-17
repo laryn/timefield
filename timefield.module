@@ -614,7 +614,9 @@ function timefield_field_validate($entity_type, $entity, $field, $instance, $lan
 function timefield_field_is_empty($item, $field) {
   // Every timefield must have at least single time value or it is considered
   // empty.
-  return (strlen($item['value']) === FALSE);
+
+  // TRUE if empty but not zero
+  return (empty($item['value']) && ($item['value'] !== 0)) || !isset($item['value']);
 }
 
 /**
@@ -892,7 +894,7 @@ function timefield_build_time_format($settings) {
  */
 function timefield_integer_to_time($settings, $value) {
   $format = timefield_build_time_format($settings);
-  if (!empty($value)) {
+  if (isset($value)) {
     if ($value >= 86400) {
       $value = $value - 86400;
     }
@@ -1089,7 +1091,18 @@ function _timefield_map_input_format_to_display_format($date, $display_format) {
   }
 
   if ($display_format['showPeriod']) {
-    $format = $date_value['hour'] > 12 ? $date_value['hour'] - 12 : $date_value['hour'];
+
+    switch ($date_value['hour']) {
+      case 0:
+        $format = 12;
+        break;
+      case ($date_value['hour'] > 12):
+        $format = $date_value['hour'] - 12;
+        break;
+      default:
+        $format = $date_value['hour'];
+        break;
+    }
   }
   else {
     $format = $date_value['hour'];
@@ -1097,12 +1110,7 @@ function _timefield_map_input_format_to_display_format($date, $display_format) {
 
   $format .= $display_format['separator'];
 
-  if ($display_format['showMinutesLeadingZero']) {
-    $format .= str_pad((string) $date_value['minute'], 2, "0", STR_PAD_LEFT);
-  }
-  else {
-    $format .= (string) $date_value['minute'];
-  }
+  $format .= str_pad((string) $date_value['minute'], 2, "0", STR_PAD_LEFT);
 
   if ($display_format['showPeriod']) {
     $format .= $display_format['periodSeparator'];
