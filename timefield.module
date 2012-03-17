@@ -589,12 +589,24 @@ function timefield_time_validate($element, &$form_state, $form) {
  */
 function timefield_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   foreach ($items as $delta => $item) {
-    if (!empty($item['value'])) {
+    dpm($item, 'item');
+    if (!empty($item['value']) && $item['value'] != 0) {
       if (!is_numeric($item['value'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'timefield_invalid',
           'message' => t('Time values are incorrect.'),
         );
+      }
+      // If field instance requires an end time, check to see that is set
+      if ($field['settings']['totime'] == 'required') {
+        if (empty($item['value2']) && $item['value2'] != 0) {
+          dpm($delta, 'delta');
+          dpm($item, 'delta');
+          $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'timefield_invalid',
+            'message' => t('An End Time Is required.'),
+          );
+        }
       }
     }
     if (!empty($item['value2'])) {
@@ -606,6 +618,11 @@ function timefield_field_validate($entity_type, $entity, $field, $instance, $lan
       }
     }
   }
+}
+
+function timefield_field_widget_error($element, $error, $form, &$form_state) {
+  dpm($element);
+  form_error($element['value'], $error['message']);
 }
 
 /**
