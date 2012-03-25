@@ -589,21 +589,18 @@ function timefield_time_validate($element, &$form_state, $form) {
  */
 function timefield_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   foreach ($items as $delta => $item) {
-    dpm($item, 'item');
-    if (!empty($item['value']) && $item['value'] != 0) {
+    if (!empty($item['value']) || $item['value'] === 0) {
       if (!is_numeric($item['value'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
-          'error' => 'timefield_invalid',
+          'error' => 'timefield_invalid_value',
           'message' => t('Time values are incorrect.'),
         );
       }
       // If field instance requires an end time, check to see that is set
       if ($field['settings']['totime'] == 'required') {
-        if (empty($item['value2']) && $item['value2'] != 0) {
-          dpm($delta, 'delta');
-          dpm($item, 'delta');
+        if (!isset($item['value2']) || (empty($item['value2']) && $item['value2'] !== 0)) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
-            'error' => 'timefield_invalid',
+            'error' => 'timefield_invalid_value2',
             'message' => t('An End Time Is required.'),
           );
         }
@@ -612,7 +609,7 @@ function timefield_field_validate($entity_type, $entity, $field, $instance, $lan
     if (!empty($item['value2'])) {
       if (!is_numeric($item['value2'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
-          'error' => 'timefield_invalid',
+          'error' => 'timefield_invalid_value2',
           'message' => t('Time values are incorrect.'),
         );
       }
@@ -621,8 +618,17 @@ function timefield_field_validate($entity_type, $entity, $field, $instance, $lan
 }
 
 function timefield_field_widget_error($element, $error, $form, &$form_state) {
-  dpm($element);
-  form_error($element['value'], $error['message']);
+  switch ($error['error']) {
+    case 'timefield_invalid_value':
+      form_error($element['value'], $error['message']);
+      break;
+    case 'timefield_invalid_value2':
+      form_error($element['value2'], $error['message']);
+      break;
+    default:
+      form_error($element, $error['message']);
+    break;
+  }
 }
 
 /**
@@ -631,9 +637,7 @@ function timefield_field_widget_error($element, $error, $form, &$form_state) {
 function timefield_field_is_empty($item, $field) {
   // Every timefield must have at least single time value or it is considered
   // empty.
-
-  // TRUE if empty but not zero
-  return (empty($item['value']) && ($item['value'] !== 0)) || !isset($item['value']);
+  return !isset($item['value']) || (empty($item['value']) && ($item['value'] !== 0));
 }
 
 /**
