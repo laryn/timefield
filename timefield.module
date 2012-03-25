@@ -702,7 +702,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
     '#delta' => $delta,
   );
 
-  $instance_class = str_replace('_', '-', $element['#field_name']);
+  $instance_class = str_replace('_', '-', $element['#field_name']) . "-" . $delta;
 
   $value = isset($items[$delta]['value']) ? timefield_integer_to_time($display_settings['display_format'], $items[$delta]['value']) : '';
 
