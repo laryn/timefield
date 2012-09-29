@@ -17,6 +17,7 @@ function timefield_field_info() {
     'settings' => array(
       'totime' => '',
       'weekly_summary' => FALSE,
+      'weekly_summary_with_label' => FALSE,
     ),
     'instance_settings' => array(
       'disable_plugin' => FALSE,
@@ -119,6 +120,13 @@ function timefield_field_settings_form($field, $instance, $has_data) {
     '#title' => t('Add Weekly Repeat Checkboxes'),
     '#description' => t('Should this field include options to specify the days on which it repeats.'),
     '#default_value' => $settings['weekly_summary'],
+    '#disabled' => $has_data,
+  );
+  $form['weekly_summary_with_label'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Add Weekly Repeat Checkboxes with Label for each Time'),
+    '#description' => t('Same as above with an additional label field for describing times.'),
+    '#default_value' => $settings['weekly_summary_with_label'],
     '#disabled' => $has_data,
   );
 
@@ -372,7 +380,7 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       '#required' => TRUE,
     );
 
-     $element += _timefield_display_format_form('display_format', "Time Input Settings", $settings);
+    $element += _timefield_display_format_form('display_format', "Time Input Settings", $settings);
 
   }
 
@@ -521,7 +529,7 @@ function timefield_field_formatter_settings_summary($field, $instance, $view_mod
     }
   }
   elseif (($display['type']) == 'timefield_weekly_summary_minical') {
-    if (!$field_settings['weekly_summary']) {
+    if (!$field_settings['weekly_summary'] || !$field_settings['weekly_summary_with_label']) {
       return t('This display format is invalid for the current field configuration');
     }
     else {
@@ -706,7 +714,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
 
   $value = isset($items[$delta]['value']) ? timefield_integer_to_time($display_settings['display_format'], $items[$delta]['value']) : '';
 
-  if ($settings['weekly_summary']) {
+  if ($settings['weekly_summary'] || $settings['weekly_summary_with_label']) {
     $days = isset($items[$delta]['mon']) ? _timefield_weekly_summary_days_map($items[$delta]) : array();
   }
 
@@ -739,7 +747,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         );
       }
 
-      if ($settings['weekly_summary']) {
+      if ($settings['weekly_summary_with_label']) {
         $element['label'] = array(
           '#title' => t('Label'),
           '#description' => t('Enter a label for the summary'),
@@ -773,7 +781,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         );
       }
 
-      if ($settings['weekly_summary']) {
+      if ($settings['weekly_summary'] || $settings['weekly_summary_with_label']) {
         $element['days'] = array(
           '#title' => t('Days'),
           '#description' => t('Select the days this schedule applies to'),
@@ -826,7 +834,7 @@ function template_preprocess_timefield_formatter(&$variables) {
       $variables['time']['time'] .= ' - ' . $variables['time']['formatted_value2'];
     }
 
-    if ($variables['settings']['weekly_summary']) {
+    if ($variables['settings']['weekly_summary'] || $variables['settings']['weekly_summary_with_label']) {
       foreach (_timefield_weekly_summary_days() as $day => $day_text) {
         if ((bool) $variables['time'][$day]) {
           $days[$day] = $day_text;
@@ -1227,7 +1235,9 @@ function timefield_property_info_callback(&$info, $entity_type, $field, $instanc
       'getter callback' => 'entity_property_verbatim_get',
       'setter callback' => 'entity_property_verbatim_set',
     );
+  }
 
+  if ($field['settings']['weekly_summary'] || $field['settings']['weekly_summary_with_label']) {
     foreach (_timefield_weekly_summary_days() as $index => $label) {
       $property['property info'][$index] = array(
         'label' => $label,
@@ -1327,7 +1337,7 @@ function _timefield_weekly_summary_explode_items(&$items) {
     foreach (array_keys(_timefield_weekly_summary_days()) as $day) {
       if ($item[$day]) {
         $ar = array(
-          'label' => $item['label'],
+          'label' => isset($item['label']) ? $item['label'] : '',
           'mon' => FALSE,
           'tue' => FALSE,
           'wed' => FALSE,
