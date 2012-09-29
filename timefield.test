@@ -12,7 +12,7 @@ class TimeFieldTest extends DrupalWebTestCase {
    */
   public static function getInfo() {
     return array(
-      'name' => 'timefield',
+      'name' => 'Timefield',
       'description' => 'Create a content type with timefield fields, create a node, check for correct values.',
       'group' => 'Fields',
     );
@@ -141,8 +141,8 @@ class TimeFieldTest extends DrupalWebTestCase {
     $this->drupalPost(NULL, $edit, t('Save'));
     $this->assertText(t('@content_type_friendly @title has been created', array('@content_type_friendly' => $content_type_friendly, '@title' => $title)));
 
-    $this->assertText(t('@time', array('@time' => "7:00 am - 8:00 am")));
-    $this->assertText(t('@time', array('@time' => "2:00 pm - 3:00 pm")));
-    $this->assertText(t('@time', array('@time' => "8:00 pm - 9:00 pm")));
+    $this->assertText(t('@time', array('@time' => "7:00am - 8:00am")));
+    $this->assertText(t('@time', array('@time' => "2:00pm - 3:00pm")));
+    $this->assertText(t('@time', array('@time' => "8:00pm - 9:00pm")));
   }
 }
