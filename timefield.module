@@ -645,7 +645,7 @@ function timefield_field_widget_error($element, $error, $form, &$form_state) {
 function timefield_field_is_empty($item, $field) {
   // Every timefield must have at least single time value or it is considered
   // empty.
-  return !isset($item['value']) || (empty($item['value']) && ($item['value'] !== 0));
+  return !isset($item['value']) || (empty($item['value']) && $item['value'] !== 0 && $item['value'] !== '0');
 }
 
 /**
