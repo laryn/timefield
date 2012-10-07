@@ -51,7 +51,6 @@ function timefield_field_info() {
   return $fields;
 }
 
-
 /**
  * Implements hook_library().
  */
@@ -99,7 +98,6 @@ function timefield_theme() {
     ),
   );
 }
-
 
 /**
  * Implements hook_field_settings_form().
@@ -279,7 +277,6 @@ function timefield_field_instance_settings_form($field, $instance) {
   return $form;
 }
 
-
 /**
  * Implements hook_field_widget_info().
  */
@@ -358,7 +355,6 @@ function timefield_field_formatter_info() {
     ),
   );
 }
-
 
 /**
  * Implements hook_field_formatter_settings_form().
@@ -597,7 +593,7 @@ function timefield_time_validate($element, &$form_state, $form) {
  */
 function timefield_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   foreach ($items as $delta => $item) {
-    if (!empty($item['value']) || $item['value'] === 0) {
+    if (!timefield_field_is_empty($item['value'], array())) {
       if (!is_numeric($item['value'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'timefield_invalid_value',
@@ -606,7 +602,7 @@ function timefield_field_validate($entity_type, $entity, $field, $instance, $lan
       }
       // If field instance requires an end time, check to see that is set
       if ($field['settings']['totime'] == 'required') {
-        if (!isset($item['value2']) || (empty($item['value2']) && $item['value2'] !== 0)) {
+        if (timefield_field_is_empty($item['value2'], array())) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
             'error' => 'timefield_invalid_value2',
             'message' => t('An End Time Is required.'),
@@ -614,7 +610,7 @@ function timefield_field_validate($entity_type, $entity, $field, $instance, $lan
         }
       }
     }
-    if (!empty($item['value2'])) {
+    if (isset($item['value2']) && !timefield_field_is_empty($item['value2'], array())) {
       if (!is_numeric($item['value2'])) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'timefield_invalid_value2',
@@ -625,6 +621,9 @@ function timefield_field_validate($entity_type, $entity, $field, $instance, $lan
   }
 }
 
+/**
+ * Implements hook_field_widget_error().
+ */
 function timefield_field_widget_error($element, $error, $form, &$form_state) {
   switch ($error['error']) {
     case 'timefield_invalid_value':
@@ -1251,7 +1250,6 @@ function timefield_property_info_callback(&$info, $entity_type, $field, $instanc
 
   unset($property['query callback']);
 }
-
 
 /**
  * Build a header for a schedule table

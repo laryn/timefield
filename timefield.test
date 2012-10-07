@@ -160,13 +160,12 @@ class TimeFieldUnitTest extends DrupalUnitTestCase {
     return array(
       'name' => 'Timefield unit tests',
       'description' => 'Test that utility functions work properly.',
-      'group' => 'Field',
+      'group' => 'Fields',
     );
   }
 
   function setUp() {
-    drupal_load('module', 'timefield');
-    parent::setUp();
+    parent::setUp('timefield');
   }
 
   /**
