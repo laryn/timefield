@@ -69,7 +69,7 @@ function timefield_library() {
       'website' => 'http://fgelinas.com/code/timepicker',
       'version' => '7.x',
       'js' => array($path . '/jquery.ui.timepicker.js' => array()),
-      'css' => array($path . '/css/jquery-ui-timepicker.css' => array()),
+      'css' => array($path . '/jquery.ui.timepicker.css' => array()),
       'dependencies' => array(
         array('system', 'ui'),
         array('system', 'ui.position'),
