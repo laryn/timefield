@@ -730,6 +730,13 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
   $instance_settings = $instance['settings'];
   $display_settings = $instance['display']['default']['settings'];
 
+  // If the element is hidden, it might not have display settings, so we just
+  // get the defaults @see #1862316
+  if (empty($display_settings)) {
+    $formatter_settings = timefield_field_formatter_info();
+    $display_settings = $formatter_settings['timefield_default']['settings'];
+  }
+
   $element += array(
     '#delta' => $delta,
   );
