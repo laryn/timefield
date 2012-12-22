@@ -61,17 +61,17 @@ function timefield_field_views_data_views_data_alter(&$data, $field) {
     $data[$data_key]['timefield_duration']['field'] = array(
       'table' => $data[$data_key][$field_name]['field']['table'],
       'field_name' => $data[$data_key][$field_name]['field']['field_name'],
-      'handler' => 'timefield_hander_field_timefield_duration',
+      'handler' => 'timefield_handler_field_timefield_duration',
     );
     $data[$data_key]['timefield_duration']['sort'] = array(
       'table' => $data[$data_key][$field_name]['field']['table'],
       'field_name' => $data[$data_key][$field_name]['field']['field_name'],
-      'handler' => 'timefield_hander_sort_timefield_duration',
+      'handler' => 'timefield_handler_sort_timefield_duration',
     );
     $data[$data_key]['timefield_duration']['filter'] = array(
       'table' => $data[$data_key][$field_name]['field']['table'],
       'field_name' => $data[$data_key][$field_name]['field']['field_name'],
-      'handler' => 'timefield_hander_filter_timefield_duration',
+      'handler' => 'timefield_handler_filter_timefield_duration',
     );
   }
 
@@ -90,5 +90,4 @@ function timefield_field_views_data_views_data_alter(&$data, $field) {
       unset($data[$data_key][$field_name . '_' . $day]['sort']);
     }
   }
-
 }

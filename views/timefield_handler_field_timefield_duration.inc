@@ -3,7 +3,7 @@
  * Contains the duration field handler.
  */
 
-class timefield_hander_field_timefield_duration extends views_handler_field {
+class timefield_handler_field_timefield_duration extends views_handler_field {
   function query() {
     $this->ensure_my_table();
 

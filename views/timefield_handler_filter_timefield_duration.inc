@@ -3,7 +3,7 @@
  * Contains the duration filter handler.
  */
 
-class TimefieldHandlerFilterTimefieldDuration extends views_handler_filter_numeric {
+class timefield_handler_filter_timefield_duration extends views_handler_filter_numeric {
 
   var $duration_unit = 'seconds';
 

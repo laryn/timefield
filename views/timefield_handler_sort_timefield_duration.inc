@@ -3,7 +3,7 @@
  * Contains the duration field handler.
  */
 
-class timefield_hander_sort_timefield_duration extends views_handler_sort {
+class timefield_handler_sort_timefield_duration extends views_handler_sort {
   function query() {
     $this->ensure_my_table();
 
