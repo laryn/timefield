@@ -842,8 +842,21 @@ function timefield_field_load($entity_type, $entities, $field, $instances, $lang
   foreach ($entities as $id => $entity) {
     foreach ($items[$id] as $delta => $item) {
       if ($field['type'] == 'timefield' && isset($instances[$id]['display']['default']['settings'])) {
-        $items[$id][$delta]['value_formatted'] = isset($item['value']) ? timefield_integer_to_time($instances[$id]['display']['default']['settings']['display_format'], $item['value']) : '';
-        $items[$id][$delta]['value2_formatted'] = isset($item['value2']) ? timefield_integer_to_time($instances[$id]['display']['default']['settings']['display_format'], $item['value2']) : '';
+
+        $display_settings = $instances[$id]['display']['default']['settings'];
+
+        // If the element is hidden, it might not have display settings, so we just
+        // get the defaults @see #1862316
+        if (!isset($display_settings['display_format'])) {
+          $formatter_settings = timefield_field_formatter_info();
+          $display_settings = $formatter_settings['timefield_default']['settings']['display_format'];
+        }
+        else {
+          $display_settings = $display_settings['display_format'];
+        }
+
+        $items[$id][$delta]['value_formatted'] = isset($item['value']) ? timefield_integer_to_time($display_settings, $item['value']) : '';
+        $items[$id][$delta]['value2_formatted'] = isset($item['value2']) ? timefield_integer_to_time($display_settings, $item['value2']) : '';
       }
     }
   }
