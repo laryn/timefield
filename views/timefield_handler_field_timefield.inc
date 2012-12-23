@@ -1,5 +1,6 @@
 <?php
 /**
+ * @file
  * Contains the duration field handler.
  */
 
@@ -29,7 +30,7 @@ class TimefieldHanlderFieldTimefield extends views_handler_field_field {
     }
 
     if ($this->field_info['settings']['weekly_summary']) {
-      foreach(_timefield_weekly_summary_days() as $day => $daytext) {
+      foreach (_timefield_weekly_summary_days() as $day => $daytext) {
         $tokens['[' . $this->options['id'] . '-' . $day . ']'] = $item['raw'][$day] ? $daytext : '';
       }
     }
