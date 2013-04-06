@@ -797,6 +797,7 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
         '#size' => 15,
         '#maxlength' => 15,
         '#attributes' => array('class' => array('edit-timefield-timepicker', $instance_class)),
+        '#required' => $instance['required'] && !$delta,
       );
 
       // Add second element if totime is required or optional.
@@ -809,7 +810,17 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
           '#size' => 15,
           '#maxlength' => 15,
           '#attributes' => array('class' => array('edit-timefield-timepicker', $instance_class)),
+          '#required' => ($settings['totime'] == 'required') && $instance['required'] && !$delta,
         );
+        // Add the appearance of required-ness for required totime
+        if ($settings['totime'] == 'required' && !$instance['required']) {
+          $element['value2']['#states'] = array(
+            // Only require this field if the value field has a value.
+            'required' => array(
+              ':input[name="' . $field['field_name'] . '[' . $langcode . '][' . $delta . '][value]"]' => array('filled' => TRUE),
+            ),
+          );
+        }
       }
 
       if ($settings['weekly_summary'] || $settings['weekly_summary_with_label']) {
