@@ -4,7 +4,7 @@
  * Contains the duration field handler.
  */
 
-class TimefieldHanlderFieldTimefield extends views_handler_field_field {
+class TimefieldHandlerFieldTimefield extends views_handler_field_field {
 
   /*
    * Add additional tokens
