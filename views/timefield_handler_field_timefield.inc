@@ -10,28 +10,31 @@ class TimefieldHandlerFieldTimefield extends views_handler_field_field {
    * Add additional tokens
    */
   function add_self_tokens(&$tokens, $item) {
+    if (!empty($item['raw']['value_formatted'])) {
+      $time = new DateTime($item['raw']['value_formatted']);
 
-    $time = new DateTime($item['raw']['value_formatted']);
+      $tokens['[' . $this->options['id'] . '-value-hour' . ']'] = $time->format('g');
+      $tokens['[' . $this->options['id'] . '-value-24hour' . ']'] = $time->format('G');
+      $tokens['[' . $this->options['id'] . '-value-minute' . ']'] = $time->format('i');
+      $tokens['[' . $this->options['id'] . '-value-ampm' . ']'] = $time->format('a');
+      $tokens['[' . $this->options['id'] . '-value-upper-ampm' . ']'] = $time->format('A');
 
-    $tokens['[' . $this->options['id'] . '-value-hour' . ']'] = $time->format('g');
-    $tokens['[' . $this->options['id'] . '-value-24hour' . ']'] = $time->format('G');
-    $tokens['[' . $this->options['id'] . '-value-minute' . ']'] = $time->format('i');
-    $tokens['[' . $this->options['id'] . '-value-ampm' . ']'] = $time->format('a');
-    $tokens['[' . $this->options['id'] . '-value-upper-ampm' . ']'] = $time->format('A');
+      if ($this->field_info['settings']['totime'] && !empty($item['raw']['value2_formatted'])) {
+        $time = new DateTime($item['raw']['value2_formatted']);
 
-    if ($this->field_info['settings']['totime']) {
-      $time = new DateTime($item['raw']['value2_formatted']);
+        $tokens['[' . $this->options['id'] . '-value2-hour' . ']'] = $time->format('g');
+        $tokens['[' . $this->options['id'] . '-value2-24hour' . ']'] = $time->format('G');
+        $tokens['[' . $this->options['id'] . '-value2-minute' . ']'] = $time->format('i');
+        $tokens['[' . $this->options['id'] . '-value2-ampm' . ']'] = $time->format('a');
+        $tokens['[' . $this->options['id'] . '-value2-upper-ampm' . ']'] = $time->format('A');
+      }
 
-    $tokens['[' . $this->options['id'] . '-value2-hour' . ']'] = $time->format('g');
-    $tokens['[' . $this->options['id'] . '-value2-24hour' . ']'] = $time->format('G');
-    $tokens['[' . $this->options['id'] . '-value2-minute' . ']'] = $time->format('i');
-    $tokens['[' . $this->options['id'] . '-value2-ampm' . ']'] = $time->format('a');
-    $tokens['[' . $this->options['id'] . '-value2-upper-ampm' . ']'] = $time->format('A');
-    }
-
-    if ($this->field_info['settings']['weekly_summary']) {
-      foreach (_timefield_weekly_summary_days() as $day => $daytext) {
-        $tokens['[' . $this->options['id'] . '-' . $day . ']'] = $item['raw'][$day] ? $daytext : '';
+      if ($this->field_info['settings']['weekly_summary']) {
+        foreach (_timefield_weekly_summary_days() as $day => $daytext) {
+          if (!empty($item['raw'][$day])) {
+            $tokens['[' . $this->options['id'] . '-' . $day . ']'] = $item['raw'][$day] ? $daytext : '';
+          }
+        }
       }
     }
   }
