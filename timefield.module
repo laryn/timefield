@@ -773,6 +773,13 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
 
       if (!$instance_settings['disable_plugin']) {
         $js_settings = _timefield_js_settings($instance_class, $instance_settings['input_format']);
+        $context = array(
+          'type' => 'field',
+          'field' => $field,
+          'instance' => $instance,
+        );
+
+        drupal_alter('timefield_js_settings', $js_settings[$instance_class], $context);
 
         $element['#attached'] = array(
           'library' => array(array('timefield', 'timepicker')),
