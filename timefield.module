@@ -86,7 +86,7 @@ function timefield_library() {
 function timefield_theme() {
 
   return array(
-    'timefield_formatter' => array(
+    'timefield' => array(
       'variables' => array('time' => NULL, 'settings' => NULL, 'format' => NULL),
       'template' => 'timefield',
       'path' => drupal_get_path('module', 'timefield') . '/theme',
@@ -694,7 +694,7 @@ function timefield_field_formatter_view($entity_type, $entity, $field, $instance
       foreach ($items as $delta => $item) {
 
         $element[$delta] = array(
-          '#theme' => array('timefield_formatter'),
+          '#theme' => array('timefield'),
           '#time' => $item,
           '#settings' => $settings,
           '#format' => 'default',
@@ -705,7 +705,7 @@ function timefield_field_formatter_view($entity_type, $entity, $field, $instance
       foreach ($items as $delta => $item) {
 
         $element[$delta] = array(
-          '#theme' => array('timefield_formatter'),
+          '#theme' => array('timefield'),
           '#time' => $item,
           '#settings' => $settings,
           '#format' => 'duration',
@@ -889,9 +889,9 @@ function timefield_field_load($entity_type, $entities, $field, $instances, $lang
 }
 
 /**
- * Preprocess function for the timefield formatter.
+ * Preprocess function for the timefield.
  */
-function template_preprocess_timefield_formatter(&$variables) {
+function template_preprocess_timefield(&$variables) {
 
   if ($variables['format'] == 'default') {
     // Encode the time elements.
