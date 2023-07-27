@@ -4,7 +4,7 @@
  */
 
 (function ($) {
-  Drupal.behaviors.timefield = {
+  Backdrop.behaviors.timefield = {
     attach: function(context, settings) {
 
       // Iterate over timefield settings, which keyed by input class.

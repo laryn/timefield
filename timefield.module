@@ -6,6 +6,19 @@
  */
 
 /**
+ * Implements hook_autoload_info().
+ */
+function timefield_autoload_info() {
+  return array(
+    'TimefieldHandlerFieldTimefield' => 'views/timefield_handler_field_timefield.inc',
+    'TimefieldPluginStyleMinical' => 'views/timefield_plugin_style_minical.inc',
+    'timefield_handler_field_timefield_duration' => 'views/timefield_handler_field_timefield_duration.inc',
+    'timefield_handler_sort_timefield_duration' => 'views/timefield_handler_sort_timefield_duration.inc',
+    'timefield_handler_filter_timefield_duration' => 'views/timefield_handler_filter_timefield_duration.inc',
+  );
+}
+
+/**
  * Implements hook_field_info().
  */
 function timefield_field_info() {
@@ -52,30 +65,23 @@ function timefield_field_info() {
 }
 
 /**
- * Implements hook_library().
+ * Implements hook_library_info().
  */
-function timefield_library() {
+function timefield_library_info() {
+  $module_path = backdrop_get_path('module', 'timefield');
 
-  $libraries = array();
-
-  $libs = libraries_get_libraries();
-
-  if (array_key_exists('jquery.timepicker', $libs)) {
-
-    $path = $libs['jquery.timepicker'];
-
-    $libraries['timepicker'] = array(
-      'title' => 'Timepicker',
-      'website' => 'http://fgelinas.com/code/timepicker',
-      'version' => '7.x',
-      'js' => array($path . '/jquery.ui.timepicker.js' => array()),
-      'css' => array($path . '/jquery.ui.timepicker.css' => array()),
-      'dependencies' => array(
-        array('system', 'ui'),
-        array('system', 'ui.position'),
-      ),
+  $libraries['timepicker'] = array(
+    'title' => 'Timepicker',
+    'website' => 'http://fgelinas.com/code/timepicker',
+    'version' => '1.x',
+    'js' => array($module_path . '/js/timepicker/jquery.ui.timepicker.js' => array()),
+    'css' => array($module_path . '/js/timepicker/jquery.ui.timepicker.css' => array()),
+    'dependencies' => array(
+      array('system', 'ui'),
+      array('system', 'ui.position'),
+    ),
     );
-  }
+
 
   return $libraries;
 }
@@ -89,12 +95,12 @@ function timefield_theme() {
     'timefield' => array(
       'variables' => array('time' => NULL, 'settings' => NULL, 'format' => NULL),
       'template' => 'timefield',
-      'path' => drupal_get_path('module', 'timefield') . '/theme',
+      'path' => backdrop_get_path('module', 'timefield') . '/theme',
     ),
     'timefield_weekly_summary_minical_box' => array(
       'render element' => 'element',
       'template' => 'timefield-weekly-minical-box',
-      'path' => drupal_get_path('module', 'timefield') . '/theme',
+      'path' => backdrop_get_path('module', 'timefield') . '/theme',
     ),
   );
 }
@@ -137,19 +143,11 @@ function timefield_field_settings_form($field, $instance, $has_data) {
 function timefield_field_instance_settings_form($field, $instance) {
   $settings = $instance['settings'];
 
-  $library = timefield_library();
-  $has_library = !empty($library);
-
-  if (!$has_library) {
-    drupal_set_message("You will not have enhanced time input widget without downloading the plugin. " . l("Read installation instructions here.", 'http://drupalcode.org/project/timefield.git/blob_plain/HEAD:/README.txt', array('absolute' => TRUE,)), 'warning');
-  }
-
   $form['disable_plugin'] = array(
     '#title' => t('Disable jQuery Timepicker plugin.'),
     '#type' => 'checkbox',
-    '#default_value' => isset($settings['disable_plugin']) ? $settings['disable_plugin'] : empty($library) ? TRUE : FALSE,
+    '#default_value' => isset($settings['disable_plugin']) ? $settings['disable_plugin'] : FALSE,
     '#description' => t('Do not use jQuery Timepicker plugin for input.'),
-    '#disabled' => (empty($library)),
   );
 
   $form['input_format'] = array(
@@ -261,7 +259,7 @@ function timefield_field_instance_settings_form($field, $instance) {
     '#title' => t('my Position'),
     '#type' => 'select',
     '#default_value' => isset($settings['input_format']['myPosition']) ? $settings['input_format']['myPosition'] : 'left top',
-    '#options' => drupal_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
+    '#options' => backdrop_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
     '#description' => t('Corner of the timpicker widget dialog to position. See !jquery_info for more info.', array('!jquery_info' => l(t("jQuery UI Position documentation"), 'http://jqueryui.com/demos/position', array('absolute' => TRUE)))),
     '#states' => array(
       'invisible' => array(
@@ -272,7 +270,7 @@ function timefield_field_instance_settings_form($field, $instance) {
   $form['input_format']['atPosition'] = array(
     '#title' => t('at Position'),
     '#type' => 'select',
-    '#options' => drupal_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
+    '#options' => backdrop_map_assoc(array('left top', 'left center', 'left bottom', 'center top', 'center center', 'center bottom', 'right top', 'right center', 'right bottom')),
     '#default_value' => isset($settings['input_format']['atPosition']) ? $settings['input_format']['atPosition'] : 'left bottom',
     '#description' => t('Where to position "my Position" relative to input widget textfield See !jquery_info for more info.', array('!jquery_info' => l(t("jQuery UI Position documentation"), 'http://jqueryui.com/demos/position', array('absolute' => TRUE)))),
     '#states' => array(
@@ -400,12 +398,15 @@ function timefield_field_formatter_settings_form($field, $instance, $view_mode, 
       'library' => array(
         array('timefield', 'timepicker'),
       ),
-      'js' =>  array(
-        drupal_get_path('module', 'timefield') . '/js/timefield.js',
+      'js' => array(
+        backdrop_get_path('module', 'timefield') . '/js/timefield.js',
         array(
           'data' => array('timefield' => $js_settings),
           'type' => 'setting',
         ),
+      ),
+      'css' => array(
+        backdrop_get_path('module', 'timefield') . '/css/timefield.css',
       ),
     );
 
@@ -550,8 +551,8 @@ function timefield_time_validate($element, &$form_state, $form) {
   $delta = $element['#delta'];
   $field_name = $element['#field_name'];
 
-  if ($field_value = drupal_array_get_nested_value($form_state['values'], $element['#field_parents'])) {
-    $field_parent = drupal_array_get_nested_value($form, $element['#field_parents']);
+  if ($field_value = backdrop_array_get_nested_value($form_state['values'], $element['#field_parents'])) {
+    $field_parent = backdrop_array_get_nested_value($form, $element['#field_parents']);
 
     if (isset($field_parent[$field_name])) {
       $field = $field_parent[$field_name][$element['#language']][$delta];
@@ -779,16 +780,19 @@ function timefield_field_widget_form(&$form, &$form_state, $field, $instance, $l
           'instance' => $instance,
         );
 
-        drupal_alter('timefield_js_settings', $js_settings[$instance_class], $context);
+        backdrop_alter('timefield_js_settings', $js_settings[$instance_class], $context);
 
         $element['#attached'] = array(
           'library' => array(array('timefield', 'timepicker')),
           'js' =>  array(
-            drupal_get_path('module', 'timefield') . '/js/timefield.js',
+            backdrop_get_path('module', 'timefield') . '/js/timefield.js',
             array(
               'data' => array('timefield' => $js_settings),
               'type' => 'setting',
             )
+          ),
+          'css' => array(
+            backdrop_get_path('module', 'timefield') . '/css/timefield.css',
           ),
         );
       }
@@ -1226,7 +1230,7 @@ function _timefield_map_input_format_to_display_format($date, $display_format) {
 function timefield_views_api() {
   return array(
     'api' => 3,
-    'path' => drupal_get_path('module', 'timefield') . '/views',
+    'path' => backdrop_get_path('module', 'timefield') . '/views',
   );
 }
 

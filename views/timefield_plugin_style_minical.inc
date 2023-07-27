@@ -70,7 +70,7 @@ class TimefieldPluginStyleMinical extends views_plugin_style {
    * Renders views
    */
   function render() {
-    $style_options = $this->view->style_options;
+    $style_options = $this->view->style_plugin->options;
 
     $cal_data = (!empty($style_options['data_source'])) ? 'field_' . $style_options['data_source']: NULL;
     $box_data = (!empty($style_options['box_source'])) ? $style_options['box_source'] : NULL;
@@ -131,6 +131,6 @@ class TimefieldPluginStyleMinical extends views_plugin_style {
       $element = array('#markup' => 'No content');
     }
 
-    return drupal_render($element);
+    return backdrop_render($element);
   }
 }

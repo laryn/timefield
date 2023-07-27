@@ -94,29 +94,29 @@ function timefield_field_schema($field) {
 /**
  * Implements hook_requirements().
  */
-function timefield_requirements($phase) {
-  $requirements = array();
+// function timefield_requirements($phase) {
+//   $requirements = array();
 
-  if ($phase == 'runtime') {
-    $t = get_t();
-    $libraries = libraries_get_libraries();
+//   if ($phase == 'runtime') {
+//     $t = get_t();
+//     $libraries = libraries_get_libraries();
 
-    if (array_key_exists('jquery.timepicker', $libraries)) {
-      $requirements['jquery_timepicker'] = array(
-        'title' => $t('jQuery Timepicker plugin'),
-        'severity' => REQUIREMENT_OK,
-        'value' => $t('jQuery Timepicker plugin is installed'),
-      );
-    }
-    else {
-      $requirements['jquery_timepicker'] = array(
-        'title' => $t('jQuery Timepicker plugin'),
-        'value' => $t('jQuery Timepicker plugin is not installed'),
-        'severity' => REQUIREMENT_INFO,
-        'description' => $t('While not a requirement, timefield module\'s utility is greatly enhanced by including the !link', array('!link' => l($t("jQuery Timepicker plugin"), "http://fgelinas.com/code/timepicker"))),
-      );
-    }
-  }
+//     if (array_key_exists('jquery.timepicker', $libraries)) {
+//       $requirements['jquery_timepicker'] = array(
+//         'title' => $t('jQuery Timepicker plugin'),
+//         'severity' => REQUIREMENT_OK,
+//         'value' => $t('jQuery Timepicker plugin is installed'),
+//       );
+//     }
+//     else {
+//       $requirements['jquery_timepicker'] = array(
+//         'title' => $t('jQuery Timepicker plugin'),
+//         'value' => $t('jQuery Timepicker plugin is not installed'),
+//         'severity' => REQUIREMENT_INFO,
+//         'description' => $t('While not a requirement, timefield module\'s utility is greatly enhanced by including the !link', array('!link' => l($t("jQuery Timepicker plugin"), "http://fgelinas.com/code/timepicker"))),
+//       );
+//     }
+//   }
 
-  return $requirements;
-}
+//   return $requirements;
+// }

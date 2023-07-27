@@ -5,18 +5,7 @@
  * Tests for timefield.
  */
 
-class TimeFieldTest extends DrupalWebTestCase {
-
-  /**
-   * Implements getInfo().
-   */
-  public static function getInfo() {
-    return array(
-      'name' => 'Timefield',
-      'description' => 'Create a content type with timefield fields, create a node, check for correct values.',
-      'group' => 'Fields',
-    );
-  }
+class TimeFieldTest extends BackdropWebTestCase {
 
   /**
    * Overrides setUp()
@@ -39,35 +28,29 @@ class TimeFieldTest extends DrupalWebTestCase {
    */
   function testTimeFieldBasic() {
     $content_type_friendly = $this->randomName(20);
-    $content_type_machine = drupal_strtolower($this->randomName(10));
+    $content_type_machine = backdrop_strtolower($this->randomName(10));
     $title = $this->randomName(20);
 
     // Create and login user.
-    $account = $this->drupalCreateUser(array('administer content types'));
-    $this->drupalLogin($account);
+    $account = $this->backdropCreateUser(array('administer content types'));
+    $this->backdropLogin($account);
 
-    $this->drupalGet('admin/structure/types');
+    $this->backdropGet('admin/structure/types');
 
     // Create the content type.
     $this->clickLink(t('Add content type'));
 
     $single_field_name_friendly = $this->randomName(20);
-    $single_field_name_machine = drupal_strtolower($this->randomName(10));
+    $single_field_name_machine = backdrop_strtolower($this->randomName(10));
 
     $edit = array(
       'name' => $content_type_friendly,
       'type' => $content_type_machine,
     );
-    $this->drupalPost(NULL, $edit, t('Save and add fields'));
+    $this->backdropPost(NULL, $edit, t('Save and add fields'));
     $this->assertText(t('The content type @name has been added.', array('@name' => $content_type_friendly)));
 
-    // Somehow clicking "save" isn't enough, and we have to do a
-    // node_types_rebuild().
-    node_types_rebuild();
     menu_rebuild();
-    $type_exists = db_query('SELECT 1 FROM {node_type} WHERE type = :type', array(':type' => $content_type_machine))->fetchField();
-    $this->assertTrue($type_exists, 'The new content type has been created in the database.');
-
 
     // Now add a singleton field.
     $edit = array(
@@ -77,19 +60,19 @@ class TimeFieldTest extends DrupalWebTestCase {
       'fields[_add_new_field][widget_type]' => 'timefield_standard',
 
     );
-    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->backdropPost(NULL, $edit, t('Save'));
 
 
     $edit = array('field[settings][totime]' => (string) ('required'));
-    $this->drupalPost(NULL, array(), t('Save field settings'));
+    $this->backdropPost(NULL, array(), t('Save field settings'));
 
-    $this->drupalPost(NULL, $edit, t('Save settings'));
+    $this->backdropPost(NULL, $edit, t('Save settings'));
     $this->assertText(t('Saved @name configuration.', array('@name' => $single_field_name_friendly)));
 
     // Now we're back on the field-add page.
     // Now add a multivalued field.
     $multivalue_field_name_friendly = $this->randomName(20);
-    $multivalue_field_name_machine = drupal_strtolower($this->randomName(10));
+    $multivalue_field_name_machine = backdrop_strtolower($this->randomName(10));
     $edit = array(
       'fields[_add_new_field][label]' => $multivalue_field_name_friendly,
       'fields[_add_new_field][field_name]' => $multivalue_field_name_machine,
@@ -97,22 +80,22 @@ class TimeFieldTest extends DrupalWebTestCase {
       'fields[_add_new_field][widget_type]' => 'timefield_standard',
 
     );
-    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->backdropPost(NULL, $edit, t('Save'));
 
     $edit = array('field[settings][totime]' => (string) ('required'));
-    $this->drupalPost(NULL, $edit, t('Save field settings'));
+    $this->backdropPost(NULL, $edit, t('Save field settings'));
 
     $edit = array(
       'field[cardinality]' => (string) (-1),
     );
-    $this->drupalPost(NULL, $edit, t('Save settings'));
+    $this->backdropPost(NULL, $edit, t('Save settings'));
 
     $this->assertText(t('Saved @name configuration.', array('@name' => $multivalue_field_name_friendly)));
 
     // Now we're back on the field-add page.
     // Now add a duration field.
     $duration_field_name_friendly = $this->randomName(20);
-    $duration_field_name_machine = drupal_strtolower($this->randomName(10));
+    $duration_field_name_machine = backdrop_strtolower($this->randomName(10));
     $edit = array(
       'fields[_add_new_field][label]' => $duration_field_name_friendly,
       'fields[_add_new_field][field_name]' => $duration_field_name_machine,
@@ -120,23 +103,23 @@ class TimeFieldTest extends DrupalWebTestCase {
       'fields[_add_new_field][widget_type]' => 'timefield_standard',
 
     );
-    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->backdropPost(NULL, $edit, t('Save'));
 
     $edit = array('field[settings][totime]' => (string) ('required'));
-    $this->drupalPost(NULL, $edit, t('Save field settings'));
+    $this->backdropPost(NULL, $edit, t('Save field settings'));
 
-    $this->drupalPost(NULL, $edit, t('Save settings'));
+    $this->backdropPost(NULL, $edit, t('Save settings'));
 
     $this->assertText(t('Saved @name configuration.', array('@name' => $duration_field_name_friendly)));
 
     // Make the display settings for duration field
 
-    $this->drupalGet('admin/structure/types/manage/' . $content_type_machine . '/display');
+    $this->backdropGet('admin/structure/types/manage/' . $content_type_machine . '/display');
 
     $edit = array(
       'fields[field_' . $duration_field_name_machine . '][type]' => 'timefield_duration',
     );
-    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->backdropPost(NULL, $edit, t('Save'));
 
     $permission = 'create ' . $content_type_machine . ' content';
     // Reset the permissions cache.
@@ -144,10 +127,10 @@ class TimeFieldTest extends DrupalWebTestCase {
 
     // Now that we have a new content type, create a user that has privileges
     // on the content type.
-    $account = $this->drupalCreateUser(array($permission));
-    $this->drupalLogin($account);
+    $account = $this->backdropCreateUser(array($permission));
+    $this->backdropLogin($account);
 
-    $this->drupalGet('node/add/' . $content_type_machine);
+    $this->backdropGet('node/add/' . $content_type_machine);
 
     // Add a node.
     $edit = array(
@@ -159,7 +142,7 @@ class TimeFieldTest extends DrupalWebTestCase {
 
     );
     // We want to add a 2nd item in the multivalue field, so hit "add another".
-    $this->drupalPost(NULL, $edit, t('Add another item'));
+    $this->backdropPost(NULL, $edit, t('Add another item'));
 
     $edit = array(
       'field_' . $multivalue_field_name_machine . '[und][1][value]' => '8:00 pm',
@@ -169,7 +152,7 @@ class TimeFieldTest extends DrupalWebTestCase {
     );
 
     // Now we can fill in the second item in the multivalue field and save.
-    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->backdropPost(NULL, $edit, t('Save'));
     $this->assertText(t('@content_type_friendly @title has been created', array('@content_type_friendly' => $content_type_friendly, '@title' => $title)));
 
     $this->assertText(t('@time1', array('@time1' => "7:00am - 8:00am")));
@@ -196,7 +179,7 @@ class TimeFieldUnitTest extends DrupalUnitTestCase {
   }
 
   function setUp() {
-    drupal_load('module', 'timefield');
+    backdrop_load('module', 'timefield');
     parent::setUp();
   }
 

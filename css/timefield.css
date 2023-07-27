@@ -1,0 +1,12 @@
+/**
+ * @file
+ * Styles for Timefield module.
+ */
+
+.ui-timepicker-table td {
+  padding: 0.1em;
+  width: auto;
+}
+.ui-timepicker-table td a {
+  width: auto;
+}
