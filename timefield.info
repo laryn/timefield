@@ -3,4 +3,3 @@ description = Implements a time field (HH:MM), with optional to time and weekly 
 backdrop = 1.x
 type = module
 package = Fields
-dependencies[] = libraries
